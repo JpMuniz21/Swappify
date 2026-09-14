@@ -16,3 +16,23 @@ services:
       - ./frontend/eslint.config.js:/app/eslint.config.js
     init: true
     restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+    volumes:
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+    init: true
+    restart: unless-stopped
+
+volumes:
+  backend_vendor:

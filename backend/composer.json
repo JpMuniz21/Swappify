@@ -1,0 +1,9 @@
+{
+  "name": "swappify/backend",
+  "type": "project",
+  "description": "API backend for Swappify.",
+  "require": {},
+  "require-dev": {},
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

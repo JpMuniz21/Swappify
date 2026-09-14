@@ -12,6 +12,10 @@ docker compose up --build -d
 ```
 
 Abra http://localhost:8080. A página inicial está em branco, pronta para receber a interface.
+
+Quando o Laravel for instalado em `backend/`, a API ficará disponível em
+http://localhost:8000. O ambiente ainda não inclui um banco de dados; ele será
+adicionado posteriormente pela equipe responsável.
 Edite os arquivos normalmente no editor: as alterações em frontend/src e frontend/public são refletidas automaticamente no navegador.
 Node.js e as dependências ficam dentro da imagem Linux; node_modules do computador não é utilizado.
 
