@@ -1,3 +1,8 @@
 <?php
 
-// As rotas da API serão definidas aqui após a instalação do Laravel.
+use Illuminate\Support\Facades\Route;
+
+Route::get('/health', fn () => response()->json([
+    'status' => 'ok',
+    'service' => 'swappify-api',
+]));

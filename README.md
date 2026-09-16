@@ -13,9 +13,7 @@ docker compose up --build -d
 
 Abra http://localhost:8080. A página inicial está em branco, pronta para receber a interface.
 
-Quando o Laravel for instalado em `backend/`, a API ficará disponível em
-http://localhost:8000. O ambiente ainda não inclui um banco de dados; ele será
-adicionado posteriormente pela equipe responsável.
+O backend Laravel inicia junto com o frontend. A API fica em http://localhost:8000 e a verificação JSON em http://localhost:8000/api/health. Na primeira inicialização, aguarde a instalação das dependências. O Supabase será conectado em uma etapa posterior; as rotas de verificação não exigem banco.
 Edite os arquivos normalmente no editor: as alterações em frontend/src e frontend/public são refletidas automaticamente no navegador.
 Node.js e as dependências ficam dentro da imagem Linux; node_modules do computador não é utilizado.
 
@@ -60,3 +58,7 @@ Versione frontend/package.json e frontend/package-lock.json juntos.
 A página inicial não exige .env. O arquivo .env.example reserva variáveis para a futura integração com Supabase, ainda não implementada.
 Quando necessário, copie .env.example para .env e preencha os valores. Reinicie o ambiente com `docker compose up -d` após mudanças.
 Variáveis VITE_ são públicas; não inclua segredos nelas.
+
+## Backend Laravel
+
+Consulte backend/README.md para detalhes. Para conferir a API: docker compose exec backend php artisan test. Para ver os logs: docker compose logs -f backend.
