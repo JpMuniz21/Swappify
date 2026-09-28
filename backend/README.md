@@ -42,6 +42,37 @@ O driver PostgreSQL está preparado para a integração futura. Preencha os dado
 
 Nesta etapa, as rotas de verificação não acessam o banco. Sessões e cache usam arquivos; filas usam execução síncrona. Autenticação, persistência e Supabase ainda não estão integrados. Nenhuma migration é executada automaticamente.
 
+## Estrutura de banco e CRUD de serviços
+
+As migrations deste sprint criam as entidades de base do DER necessárias para
+serviços: `localizacoes`, `categorias`, os campos de perfil de `users` e
+`servicos`. A relação é: uma localização possui usuários; um usuário e uma
+categoria possuem vários serviços.
+
+Depois que a equipe conectar o PostgreSQL/Supabase, execute:
+
+```sh
+docker compose exec backend php artisan migrate --seed
+docker compose exec backend php artisan test --filter=ServicoCrudTest
+```
+
+O seeder cria uma localização, três categorias, um usuário e um serviço de
+exemplo para facilitar os testes.
+
+### Rotas de serviços
+
+| Método | Rota | Função |
+| --- | --- | --- |
+| GET | `/api/servicos` | Lista serviços paginados. |
+| POST | `/api/servicos` | Cria um serviço. |
+| GET | `/api/servicos/{id}` | Exibe um serviço. |
+| PUT/PATCH | `/api/servicos/{id}` | Atualiza um serviço. |
+| DELETE | `/api/servicos/{id}` | Exclui um serviço. |
+
+No momento, as rotas são públicas para que o CRUD possa ser integrado e testado.
+Quando a autenticação for implementada, a criação, edição e exclusão devem ser
+protegidas para permitir que apenas o dono altere o próprio serviço.
+
 Não versione .env, vendor ou logs. Versione composer.json e composer.lock juntos. O servidor Artisan e APP_DEBUG=true são configurações exclusivas de desenvolvimento.
 
 ## Imagens e primeira construção
