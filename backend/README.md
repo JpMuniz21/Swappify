@@ -40,10 +40,16 @@ Use os comandos PHP e Composer pelo docker compose exec backend. Execute os coma
 
 O driver PostgreSQL está preparado para a integração futura. Preencha os dados DB_* no .env local quando for conectar o Supabase. Não é necessário adicionar um banco ao Compose para usar Supabase hospedado.
 
-Nesta etapa, as rotas de verificação não acessam o banco. Sessões e cache usam arquivos; filas usam execução síncrona. Autenticação, persistência e Supabase ainda não estão integrados. Nenhuma migration é executada automaticamente.
+As rotas de verificação não acessam o banco. O CRUD do próprio usuário e a autenticação por sessão estão implementados; requerem banco configurado e migrations para uso manual. Os testes usam SQLite em memória. Sessões e cache usam arquivos; filas usam execução síncrona. A conexão Supabase ainda precisa ser configurada. Nenhuma migration é executada automaticamente.
 
 Não versione .env, vendor ou logs. Versione composer.json e composer.lock juntos. O servidor Artisan e APP_DEBUG=true são configurações exclusivas de desenvolvimento.
 
 ## Imagens e primeira construção
 
 O Dockerfile usa PHP 8.3.33 e Composer 2.10.3. A primeira construção baixa as imagens e bibliotecas; o tempo depende da conexão. Nesta máquina, a validação inicial reutilizou uma imagem PHP 8.3.33 local por meio do argumento PHP_IMAGE. Os demais computadores usam a imagem oficial padrão, sem precisar dessa imagem local.
+
+## CRUD do próprio usuário
+
+Cadastro, login, consulta/edição/exclusão da própria conta e logout estão implementados
+com comentários em português. Veja [o guia de usuários](docs/usuarios.md) para as rotas,
+os campos, exemplos de chamadas do futuro React, teste local e conexão PostgreSQL/Supabase.
