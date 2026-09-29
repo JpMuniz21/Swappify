@@ -1,0 +1,46 @@
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 330px;
+}
+
+.login-opcoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    color: var(--texto-suave);
+}
+
+.login-lembrar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.login-lembrar input {
+    accent-color: var(--roxo-escuro);
+}
+
+.login-opcoes a,
+.login-cadastro a {
+    color: var(--roxo-escuro);
+}
+
+.login-erro {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #c0392b;
+    text-align: center;
+}
+
+.login-cadastro {
+    margin: 0;
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--texto-suave);
+}
