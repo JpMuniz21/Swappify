@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('profession', 100)->nullable();
+            $table->string('bio', 240)->nullable();
+            $table->date('registered_at');
+            $table->foreignId('location_id')->constrained('localizacoes')->restrictOnDelete();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
