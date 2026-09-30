@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
@@ -7,16 +7,20 @@ import { login } from '../../services/authService';
 import './Login.css';
 
 export default function Login() {
-  const [identificacao, setIdentificacao] = useState('');
+  const navigate = useNavigate();
+  const [identificacao, setIdentificacao] = useState(() => {
+    try { return localStorage.getItem('swappify.email') ?? ''; }
+    catch { return ''; }
+  });
   const [senha, setSenha] = useState('');
-  const [lembrar, setLembrar] = useState(false);
+  const [lembrar, setLembrar] = useState(Boolean(identificacao));
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   function validar() {
     const novos = {};
-    if (!identificacao.trim()) novos.identificacao = 'Informe seu e-mail ou nome de usuário.';
+    if (!identificacao.trim()) novos.identificacao = 'Informe seu e-mail.';
     if (!senha) novos.senha = 'Informe sua senha.';
     setErros(novos);
     return Object.keys(novos).length === 0;
@@ -29,11 +33,19 @@ export default function Login() {
 
     setEnviando(true);
     try {
-      const resposta = await login({ login: identificacao, password: senha });
-      // TODO: guardar o token (resposta.token) e redirecionar para a home
-      console.log('Logado', resposta, { lembrar });
+      await login({ email: identificacao.trim(), password: senha });
+      // Guarda somente a identificação quando solicitado; senha e sessão nunca são salvas aqui.
+      try {
+        if (lembrar) localStorage.setItem('swappify.email', identificacao.trim());
+        else localStorage.removeItem('swappify.email');
+      } catch { /* Armazenamento pode estar bloqueado pelo navegador. */ }
+      navigate('/perfil', { replace: true });
     } catch (err) {
-      setErroGeral(err.message);
+      setErros({
+        identificacao: err.errors?.email?.[0],
+        senha: err.errors?.password?.[0],
+      });
+      setErroGeral(err.status === 419 ? 'Sessão expirada. Tente entrar novamente.' : err.message);
     } finally {
       setEnviando(false);
     }
@@ -44,8 +56,8 @@ export default function Login() {
       <form className="login-form" onSubmit={enviar} noValidate>
         <Input
           id="identificacao"
-          label="E-mail ou nome de usuário"
-          placeholder="Email ou nome do usuario"
+          label="E-mail" type="email"
+          placeholder="Seu e-mail"
           value={identificacao}
           onChange={(e) => setIdentificacao(e.target.value)}
           erro={erros.identificacao}

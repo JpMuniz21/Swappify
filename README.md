@@ -62,3 +62,6 @@ Variáveis VITE_ são públicas; não inclua segredos nelas.
 ## Backend Laravel
 
 Consulte backend/README.md para detalhes. Para conferir a API: docker compose exec backend php artisan test. Para ver os logs: docker compose logs -f backend.
+
+O CRUD do próprio usuário já tem cadastro, login, consulta, edição, exclusão e logout.
+Veja [o guia de usuários](backend/docs/usuarios.md) para testar sem Supabase e integrar o futuro frontend.
