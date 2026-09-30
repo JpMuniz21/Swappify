@@ -1,4 +1,4 @@
-// FRONTEND: configurar VITE_API_URL no Vite/Compose; manter /api no endereço.
+// configuracao da url base da api
 const API_URL = import.meta.env?.VITE_API_URL ?? 'http://localhost:8000/api';
 
 async function lerResposta(resposta) {
@@ -40,5 +40,7 @@ export const login = (dados) => requisitar('/login', 'POST', dados);
 export const cadastrar = (dados) => requisitar('/register', 'POST', dados);
 export const consultarPerfil = () => requisitar('/me');
 export const atualizarPerfil = (dados) => requisitar('/me', 'PATCH', dados);
+export const cadastrarServico = (dados) => requisitar('/servicos', 'POST', dados);
+export const listarServicos = () => requisitar('/servicos', 'GET');
 export const excluirConta = (senha) => requisitar('/me', 'DELETE', { current_password: senha });
-export const logout = () => requisitar('/logout', 'POST');
+export const logout = () => requisitar('/logout', 'POST');
