@@ -8,4 +8,5 @@ Route::get('/health', fn () => response()->json([
     'service' => 'swappify-api',
 ]));
 
-Route::apiResource('servicos', ServicoController::class);
+// A leitura do catálogo é pública; escritas usam sessão/CSRF em account.php.
+Route::apiResource('servicos', ServicoController::class)->only(['index', 'show']);

@@ -8,7 +8,7 @@ class StoreServicoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null; // Requer uma sessão autenticada.
     }
 
     public function rules(): array
@@ -18,7 +18,7 @@ class StoreServicoRequest extends FormRequest
             'descricao' => ['required', 'string', 'max:150'],
             'tipo' => ['required', 'string', 'max:150'],
             'status' => ['required', 'string', 'max:30'],
-            'usuario_id' => ['required', 'integer', 'exists:users,id'],
+            'usuario_id' => ['prohibited'], // O dono é definido pela sessão.
             'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
         ];
     }

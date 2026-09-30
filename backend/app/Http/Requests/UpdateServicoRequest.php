@@ -8,7 +8,8 @@ class UpdateServicoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null
+            && $this->route('servico')->usuario_id === $this->user()->id; // Exige ser o dono.
     }
 
     public function rules(): array
@@ -18,7 +19,7 @@ class UpdateServicoRequest extends FormRequest
             'descricao' => ['sometimes', 'required', 'string', 'max:150'],
             'tipo' => ['sometimes', 'required', 'string', 'max:150'],
             'status' => ['sometimes', 'required', 'string', 'max:30'],
-            'usuario_id' => ['sometimes', 'required', 'integer', 'exists:users,id'],
+            'usuario_id' => ['prohibited'], // Não permite transferir o serviço pelo formulário.
             'categoria_id' => ['sometimes', 'required', 'integer', 'exists:categorias,id'],
         ];
     }

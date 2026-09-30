@@ -1,0 +1,14 @@
+.perfil {
+  width: 100%;
+  max-width: 360px;
+  color: var(--roxo-escuro);
+  overflow-wrap: anywhere;
+}
+
+.perfil h1 {
+  font-size: 1.5rem;
+}
+
+.perfil [role="alert"] {
+  color: #a52d21;
+}
