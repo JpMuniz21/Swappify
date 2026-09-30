@@ -2,6 +2,7 @@
     width: 100%;
 }
 
+/* label escondida visualmente (o Figma usa só placeholder), mas lida por leitores de tela */
 .campo-label {
     position: absolute;
     width: 1px;
@@ -18,7 +19,6 @@
     border: 2px solid var(--borda-input);
     border-radius: 8px;
     background: transparent;
-    gap: 10px;
 }
 
 .campo-caixa:focus-within {
@@ -32,20 +32,8 @@
 .campo-icone {
     display: flex;
     align-items: center;
-    justify-content: center;
+    margin-right: 10px;
     color: var(--texto-suave);
-    flex-shrink: 0;
-}
-
-.campo-icone svg,
-.campo-icone img {
-    width: 18px;
-    height: 18px;
-    display: block;
-}
-
-.campo-caixa:focus-within .campo-icone {
-    color: var(--roxo-escuro);
 }
 
 .campo-input {
@@ -66,11 +54,17 @@
     display: flex;
     align-items: center;
     border: none;
-    background: none;
+    background-color: transparent;
+    box-shadow: none;
+    outline: none;
     cursor: pointer;
     padding: 0;
     color: var(--roxo-escuro);
-    flex-shrink: 0;
+    transition: filter 0.2s ease;
+}
+
+.campo-olho:hover {
+    filter: brightness(0.7);
 }
 
 .campo-erro {
@@ -78,18 +72,4 @@
     margin-top: 4px;
     font-size: 0.75rem;
     color: #c0392b;
-}
-
-.campo-icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #828282; /* Uma cor cinzenta visível */
-  flex-shrink: 0;
-}
-
-.campo-icone svg {
-  width: 18px;
-  height: 18px;
-  display: block;
 }

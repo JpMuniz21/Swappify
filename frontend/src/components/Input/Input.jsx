@@ -5,15 +5,14 @@ export default function Input({ label, id, type = 'text', erro, icone, ...props 
   const [visivel, setVisivel] = useState(false);
   const ehSenha = type === 'password';
 
+  const iconesProntos = { pessoa: <IconePessoa />, email: <IconeEmail />, senha: <IconeCadeado /> };
+  const iconeEsquerda = typeof icone === 'string' ? iconesProntos[icone] : icone;
+
   return (
     <div className="campo">
-      {label && <label className="campo-label" htmlFor={id}>{label}</label>}
+      <label className="campo-label" htmlFor={id}>{label}</label>
       <div className={`campo-caixa ${erro ? 'campo-caixa--erro' : ''}`}>
-        {icone && (
-          <span className="campo-icone" aria-hidden="true">
-            {icone}
-          </span>
-        )}
+        {iconeEsquerda && <span className="campo-icone" aria-hidden="true">{iconeEsquerda}</span>}
         <input
           id={id}
           className="campo-input"
@@ -34,6 +33,33 @@ export default function Input({ label, id, type = 'text', erro, icone, ...props 
       </div>
       {erro && <span className="campo-erro" role="alert">{erro}</span>}
     </div>
+  );
+}
+
+function IconePessoa() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M4.5 20c1-4 4-6 7.5-6s6.5 2 7.5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconeEmail() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="2" y="4.5" width="20" height="15" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="m3 6 9 7 9-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconeCadeado() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="10.5" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -58,24 +84,6 @@ function IconeOlhoFechado() {
       />
       <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
       <line x1="3" y1="20" x2="21" y2="4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-export function IconeEmail() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect width="20" height="16" x="2" y="4" rx="2" stroke="currentColor" strokeWidth="1.8" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-export function IconeCadeado() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect width="18" height="11" x="3" y="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }

@@ -62,6 +62,7 @@ export default function Login() {
           onChange={(e) => setIdentificacao(e.target.value)}
           erro={erros.identificacao}
           autoComplete="username"
+          icone="email"
         />
         <Input
           id="senha"
@@ -72,6 +73,7 @@ export default function Login() {
           onChange={(e) => setSenha(e.target.value)}
           erro={erros.senha}
           autoComplete="current-password"
+          icone="senha"
         />
 
         <div className="login-opcoes">

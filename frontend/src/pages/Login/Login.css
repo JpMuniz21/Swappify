@@ -29,6 +29,15 @@
 .login-opcoes a,
 .login-cadastro a {
     color: var(--roxo-escuro);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: all 0.2s ease;
+}
+
+.login-opcoes a:hover,
+.login-cadastro a:hover {
+    filter: brightness(1.3);
+    text-decoration-color: currentColor;
 }
 
 .login-erro {
@@ -43,4 +52,24 @@
     font-size: 0.7rem;
     text-align: center;
     color: var(--texto-suave);
+}
+
+/* =========================================
+   EFEITOS EXCLUSIVOS DO BOTÃO ACESSAR
+   ========================================= */
+.login-form button[type="submit"] {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.login-form button[type="submit"]:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 23, 84, 0.35);
+}
+
+.login-form button[type="submit"]:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
 }
