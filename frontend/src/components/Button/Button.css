@@ -1,0 +1,24 @@
+.botao {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 6px;
+    background: var(--roxo-escuro);
+    color: #fff;
+    font: 500 0.9rem 'Montserrat', sans-serif;
+    cursor: pointer;
+}
+
+.botao:hover:not(:disabled) {
+    filter: brightness(1.2);
+}
+
+.botao:focus-visible {
+    outline: 3px solid var(--roxo-claro);
+    outline-offset: 2px;
+}
+
+.botao:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

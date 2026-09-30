@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController; // Controller responsável pelo cadastro e pelo próprio perfil.
+use App\Http\Controllers\ServicoController;
 use Illuminate\Support\Facades\Route; // Registra os endereços HTTP.
 
 // Este arquivo é incluído por web.php para ter cookies, sessão e proteção CSRF.
@@ -11,6 +12,8 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
     Route::post('/login', [AccountController::class, 'login'])->middleware('throttle:5,1'); // Limita tentativas de senha.
 
     Route::middleware(['auth:web', 'throttle:60,1'])->group(function (): void { // Exige login e limita requisições.
+        // Escritas dos serviços compartilham autenticação, sessão e CSRF do usuário.
+        Route::apiResource('servicos', ServicoController::class)->only(['store', 'update', 'destroy']);
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::delete('/me', [AccountController::class, 'destroy']); // Exclui a conta confirmando a senha.

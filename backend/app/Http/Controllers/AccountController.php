@@ -95,7 +95,7 @@ class AccountController extends Controller
         ]);
         $user = $request->user('web'); // Guarda a conta antes de encerrar sua sessão.
         $this->endSession($request); // Logout vem antes: ele pode salvar o remember_token no model.
-        $user->delete(); // FUTURO: rever a exclusão definitiva quando houver anúncios/trocas vinculados.
+        $user->delete(); // A chave estrangeira também exclui os serviços desta conta; informar isso na confirmação do frontend.
 
         return response()->noContent(); // HTTP 204 confirma a operação sem enviar JSON.
     }

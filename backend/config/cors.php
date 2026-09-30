@@ -1,14 +1,14 @@
 <?php
 
-// FRONTEND: altere FRONTEND_URL no backend/.env quando o endereço do React mudar.
-// A origem deve ser exata (protocolo, domínio e porta), sem barra final.
+// FRONTEND: alterar FRONTEND_URL no backend/.env ao mudar o endereço do React.
 return [
-    'paths' => ['api/*'], // Aplica CORS às URLs que serão consumidas pelo React.
-    'allowed_methods' => ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'], // Métodos utilizados pelo CRUD.
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:8080')], // Autoriza somente o frontend configurado.
-    'allowed_origins_patterns' => [], // Não abre acesso por padrões de domínio.
-    'allowed_headers' => ['Accept', 'Content-Type', 'X-CSRF-TOKEN', 'X-XSRF-TOKEN'], // Cabeçalhos esperados.
-    'exposed_headers' => [], // Não expõe cabeçalhos extras ao JavaScript.
-    'max_age' => 0, // Não mantém cache da autorização de preflight durante o desenvolvimento.
-    'supports_credentials' => true, // Permite enviar o cookie de sessão com credentials: 'include'.
+    'paths' => ['api/*'],
+    // PUT também é utilizado na edição dos serviços.
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:8080')],
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['Accept', 'Content-Type', 'X-CSRF-TOKEN', 'X-XSRF-TOKEN'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true, // Permite o cookie de sessão do Laravel.
 ];

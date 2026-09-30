@@ -3,7 +3,7 @@
 ## O que foi feito
 
 O Laravel cadastra, autentica, consulta, edita e exclui a própria conta.
-Os campos iniciais são name, email e password. O cadastro também recebe
+Os campos iniciais são name, email e password. registered_at é definido pelo servidor; location_id é opcional. O cadastro também recebe
 password_confirmation, que serve apenas para confirmação e não é salvo.
 O e-mail é convertido para minúsculas. Senhas ficam como hash e não aparecem nas respostas.
 
@@ -15,9 +15,12 @@ A API usa cookies de sessão e proteção CSRF nativos do Laravel. Por isso as r
 em routes/account.php, incluído por routes/web.php, embora suas URLs comecem com /api.
 routes/api.php mantém o health check público e independente do banco.
 
-A administração, as telas React, a recuperação de senha e o envio de verificação de e-mail
-ficam para próximas etapas. A exclusão atual é definitiva. Antes de criar anúncios e trocas
-vinculados à conta, definir como esses registros devem ser tratados na exclusão.
+A tela React de login agora usa sessão e CSRF e abre /perfil, que consulta /api/me e oferece
+logout. Formulários de cadastro/edição/exclusão, administração, recuperação de senha e
+verificação de e-mail continuam como próximas etapas. Os links de cadastro e recuperação
+da tela original ainda apontam para páginas não implementadas.
+A exclusão atual é definitiva e também apaga os serviços do usuário (cascadeOnDelete).
+A confirmação de exclusão no futuro frontend deve informar esse efeito.
 
 ## Onde ler e onde alterar
 
@@ -30,7 +33,7 @@ vinculados à conta, definir como esses registros devem ser tratados na exclusã
 | bootstrap/app.php | Devolve erros da API em JSON, incluindo 401 sem página de login. |
 | config/cors.php | Lê FRONTEND_URL para autorizar a origem do React e cookies. |
 | .env.example | Modelo comentado; copiar os valores necessários para backend/.env. |
-| database/migrations/0001_01_01_000000_create_users_table.php | Migration existente que já cria users; não foi necessário duplicá-la. |
+| database/migrations/0001_01_01_000000_create_users_table.php | Cria o users original. Campos de perfil são acrescentados pela migration de integração de 2026-09-30. |
 | tests/Feature/AccountTest.php | Verifica cadastro, autenticação, edição, exclusão, isolamento de contas, CSRF e CORS. |
 | phpunit.xml | Usa SQLite em memória e fixa o ambiente de testes mesmo com APP_ENV vindo do Docker. |
 
@@ -137,7 +140,7 @@ Erros comuns:
 Login e cadastro compartilham o limite de 5 tentativas por minuto por IP para visitantes.
 Rotas autenticadas têm limite de 60 requisições por minuto.
 
-## Quando o frontend ficar pronto
+## Integração com o frontend
 
 1. Configure FRONTEND_URL=http://localhost:8080 em backend/.env. Quando o domínio mudar,
    atualize esse valor, sem barra final, e execute php artisan config:clear pelo Compose.
@@ -150,7 +153,7 @@ Rotas autenticadas têm limite de 60 requisições por minuto.
    renovam a sessão/token. O exemplo abaixo busca um token antes de cada escrita.
 6. Para 204, não chame response.json(), pois não existe corpo.
 
-Exemplo para copiar para o futuro serviço HTTP do React (nenhuma tela foi criada):
+Exemplo didático de chamadas. O serviço utilizado pelo React está em frontend/src/services/authService.js:
 
 ```js
 // FRONTEND: defina VITE_API_URL na configuração do Vite/Compose.
@@ -206,3 +209,33 @@ diferentes. Use localhost nos dois, sem misturar com 127.0.0.1.
 Em produção, planeje domínios do mesmo site e HTTPS, configure SESSION_SECURE_COOKIE=true
 e APP_DEBUG=false. Domínios de sites diferentes exigem rever cookies e arquitetura;
 alterar apenas CORS não garante funcionamento.
+
+## Integração com serviços e bancos existentes
+
+- GET /api/servicos e GET /api/servicos/{id} são públicos. A resposta não inclui
+  e-mail, senha, bairro ou CEP do dono.
+- POST /api/servicos, PUT/PATCH /api/servicos/{id} e DELETE /api/servicos/{id}
+  usam cookies e CSRF da mesma sessão. Só o dono pode editar/excluir.
+- Não envie usuario_id no cadastro/edição de serviços: o servidor define o dono.
+- Ao atualizar um banco existente, execute docker compose exec backend php artisan migrate.
+  A migration de integração aceita o users original e a versão anterior da dev.
+  Preserva campos já existentes e preenche registered_at das contas antigas a partir
+  de created_at (ou a data atual quando não houver data).
+- A localização pode ser preenchida numa futura etapa de perfil; o CRUD atual não
+  oferece edição desse campo. O cadastro inicial não cria uma localização fictícia.
+
+## Verificações da integração
+
+Na raiz do projeto:
+
+~~~sh
+docker compose exec backend php artisan test
+docker compose run --rm --no-deps -v ./frontend/tests:/app/tests frontend node --test tests/authService.test.js
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run build
+~~~
+
+Os testes incluem autorização dos serviços, CSRF, privacidade da resposta pública,
+cadastro seguido da criação de serviço, exclusão em cascata e atualização do schema.
+O backend usa SQLite em memória nos testes; a conexão PostgreSQL/Supabase deve ser
+validada no ambiente configurado antes de publicar.
