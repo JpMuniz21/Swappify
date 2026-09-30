@@ -43,4 +43,4 @@ export const atualizarPerfil = (dados) => requisitar('/me', 'PATCH', dados);
 export const cadastrarServico = (dados) => requisitar('/servicos', 'POST', dados);
 export const listarServicos = () => requisitar('/servicos', 'GET');
 export const excluirConta = (senha) => requisitar('/me', 'DELETE', { current_password: senha });
-export const logout = () => requisitar('/logout', 'POST');
+export const logout = () => requisitar('/logout', 'POST');
