@@ -1,0 +1,175 @@
+.cadastro-fundo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 40px 10px 100px;
+    box-sizing: border-box;
+    background-color: var(--roxo-escuro);
+    background-image: url('../../assets/fundo-circulos.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.cadastro-cartao {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    padding: 32px 40px 40px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+}
+
+.cadastro-voltar {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.85);
+    background-color: transparent;
+    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cadastro-voltar:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.12);
+    transform: translateX(-3px);
+}
+
+.cadastro-voltar:active {
+    transform: translateX(-1px) scale(0.96);
+}
+
+.cadastro-cartao button[type="submit"],
+.cadastro-cartao .button {
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.cadastro-cartao button[type="submit"]:hover:not(:disabled),
+.cadastro-cartao .button:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 23, 84, 0.45);
+}
+
+.cadastro-cartao button[type="submit"]:active:not(:disabled),
+.cadastro-cartao .button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.05);
+}
+
+.cadastro-cartao button[type="submit"]:disabled,
+.cadastro-cartao .button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.cadastro-titulo {
+    margin: 0 0 24px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 1.8rem;
+    color: #fff;
+    text-align: center;
+}
+
+.cadastro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cadastro-form .campo-caixa {
+    background: #fff;
+}
+
+.cadastro-grupo {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cadastro-grupo legend {
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 0.85rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.cadastro-linha {
+    display: grid;
+    gap: 10px;
+}
+
+.cadastro-linha--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.cadastro-linha--4 {
+    display: grid;
+    grid-template-columns: 1.2fr 1.8fr 0.8fr 1.8fr;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cadastro-linha>* {
+    min-width: 0;
+    width: 100%;
+}
+
+.cadastro-linha .campo-input {
+    min-width: 0;
+    width: 100%;
+}
+
+.cadastro-termos {
+    margin: 4px 0 0;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.cadastro-termos a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.cadastro-erro {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #ffb4b4;
+    text-align: center;
+}
+
+
+@media (max-width: 560px) {
+    .cadastro-linha--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cadastro-cartao {
+        padding: 28px 20px 32px;
+    }
+}

@@ -1,11 +1,13 @@
-// configuracao da url base da api
-const API_URL = import.meta.env?.VITE_API_URL ?? 'http://localhost:8000/api';
+// FRONTEND: configurar VITE_API_URL no Vite/Compose; manter /api no endereço.
+const API_URL = import.meta.env?.VITE_API_URL ?? "http://localhost:8000/api";
 
 async function lerResposta(resposta) {
   if (resposta.status === 204) return null; // Logout/exclusão não retornam corpo.
   const corpo = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
-    const erro = new Error(corpo.message ?? 'Não foi possível concluir a ação.');
+    const erro = new Error(
+      corpo.message ?? "Não foi possível concluir a ação.",
+    );
     erro.status = resposta.status;
     erro.errors = corpo.errors ?? {}; // Permite exibir erros específicos do formulário.
     throw erro;
@@ -13,23 +15,23 @@ async function lerResposta(resposta) {
   return corpo;
 }
 
-async function requisitar(rota, method = 'GET', dados) {
-  const headers = { Accept: 'application/json' };
-  if (method !== 'GET') {
+async function requisitar(rota, method = "GET", dados) {
+  const headers = { Accept: "application/json" };
+  if (method !== "GET") {
     // O token acompanha a sessão atual; login/logout/troca de senha podem renová-lo.
-    const csrf = await fetch(API_URL + '/csrf-token', {
-      credentials: 'include',
-      cache: 'no-store',
+    const csrf = await fetch(API_URL + "/csrf-token", {
+      credentials: "include",
+      cache: "no-store",
       headers,
     });
     const { csrf_token } = await lerResposta(csrf);
-    headers['X-CSRF-TOKEN'] = csrf_token;
-    headers['Content-Type'] = 'application/json';
+    headers["X-CSRF-TOKEN"] = csrf_token;
+    headers["Content-Type"] = "application/json";
   }
 
   const resposta = await fetch(API_URL + rota, {
     method,
-    credentials: 'include', // Envia o cookie HttpOnly; não salva token em localStorage.
+    credentials: "include", // Envia o cookie HttpOnly; não salva token em localStorage.
     headers,
     body: dados === undefined ? undefined : JSON.stringify(dados),
   });
