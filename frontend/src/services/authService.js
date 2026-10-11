@@ -15,7 +15,7 @@ async function lerResposta(resposta) {
   return corpo;
 }
 
-async function requisitar(rota, method = "GET", dados) {
+export async function requisitar(rota, method = "GET", dados) {
   const headers = { Accept: "application/json" };
   if (method !== "GET") {
     // O token acompanha a sessão atual; login/logout/troca de senha podem renová-lo.
