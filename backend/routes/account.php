@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\AccountController; // Controller responsável pelo cadastro e pelo próprio perfil.
 use App\Http\Controllers\ServicoController;
-use Illuminate\Support\Facades\Route; // Registra os endereços HTTP.
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ChatController; // Registra os endereços HTTP.
 
 // Este arquivo é incluído por web.php para ter cookies, sessão e proteção CSRF.
 // FRONTEND: as URLs começam em http://localhost:8000/api; consultar docs/usuarios.md.
@@ -17,6 +18,11 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::delete('/me', [AccountController::class, 'destroy']); // Exclui a conta confirmando a senha.
+        Route::get('/conversas', [ChatController::class, 'conversas']);
+        Route::get('/conversas/{idMatch}/mensagens', [ChatController::class, 'mensagens'])
+            ->where('idMatch', '[A-Za-z0-9\-]+');
+        Route::post('/conversas/{idMatch}/mensagens', [ChatController::class, 'enviar'])
+                ->where('idMatch', '[A-Za-z0-9\-]+');
         Route::post('/logout', [AccountController::class, 'logout']); // Encerra a sessão atual.
     });
 });
