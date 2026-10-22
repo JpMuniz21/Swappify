@@ -1,0 +1,104 @@
+﻿/* Card de servico favoritado */
+
+.fav-servico-card {
+  position: relative;
+  background: #ffffff;
+  border: 1.5px solid #ece8f2;
+  border-radius: 20px;
+  padding: 28px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.fav-servico-card:hover {
+  box-shadow: 0 8px 28px rgba(63, 38, 80, 0.1);
+  border-color: #d8c8eb;
+  transform: translateY(-2px);
+}
+
+/* botao coracao - reutilizado em ambos os cards */
+.fav-servico-card .fav-card-coracao {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #6b35a8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.fav-servico-card .fav-card-coracao:hover {
+  transform: scale(1.15);
+  color: #4a1d7a;
+}
+
+/* icone do servico */
+.fav-servico-icone-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ede4f8, #ddd0f2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b35a8;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+/* informacoes */
+.fav-servico-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fav-servico-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.fav-servico-descricao {
+  font-size: 0.8rem;
+  color: #726c7c;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.fav-servico-prestador {
+  font-size: 0.78rem;
+  color: #5c5666;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fav-servico-prestador strong {
+  color: #3f2650;
+  font-weight: 600;
+}
+
+.fav-servico-prestador-avaliacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+  color: #554e60;
+  margin-left: 4px;
+}
