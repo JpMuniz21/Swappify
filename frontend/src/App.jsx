@@ -3,6 +3,7 @@ import Login from './pages/Login/Login';
 import Cadastro from './pages/Cadastro/Cadastro';
 import Profile from './pages/Profile/Profile';
 import Chat from './pages/Chat/chat';
+import Configuracoes from './pages/Configuracoes/Configuracoes';
 import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/perfil" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       </Routes>
     </BrowserRouter>
