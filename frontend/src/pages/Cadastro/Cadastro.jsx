@@ -1,33 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Input from '../../components/Input/Input';
-import Select from '../../components/Select/Select';
 import Button from '../../components/Button/Button';
 import { cadastrar } from '../../services/authService';
 import fundoCirculos from '../../assets/fundo-circulos.svg';
 import './Cadastro.css';
 
-const DIAS = Array.from({ length: 31 }, (_, i) => String(i + 1));
-const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-const ANO_ATUAL = new Date().getFullYear();
-const ANOS = Array.from({ length: 100 }, (_, i) => String(ANO_ATUAL - i));
-const GENEROS = ['Feminino', 'Masculino', 'Não Binário', 'Outro', 'Prefiro não dizer'];
-const UFS = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
-  'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
-  'SP', 'SE', 'TO',
-];
-
 export default function Cadastro() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    nome: '', contato: '', senha: '',
-    dia: '', mes: '', ano: '',
-    genero: '', profissao: '', uf: '', cidade: '',
+    nome: '', email: '', senha: '', confirmarSenha: '',
   });
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState('');
@@ -40,9 +23,10 @@ export default function Cadastro() {
   function validar() {
     const novos = {};
     if (!form.nome.trim()) novos.nome = 'Informe seu nome completo.';
-    if (!form.contato.trim()) novos.contato = 'Informe seu celular ou e-mail.';
-    if (!form.senha || form.senha.length < 6) novos.senha = 'A senha precisa ter ao menos 6 caracteres.';
-    if (!form.dia || !form.mes || !form.ano) novos.dataNascimento = 'Informe sua data de nascimento completa.';
+    if (!form.email.trim()) novos.email = 'Informe seu e-mail.';
+    else if (!/^\S+@\S+\.\S+$/.test(form.email)) novos.email = 'Informe um e-mail válido.';
+    if (!form.senha || form.senha.length < 8) novos.senha = 'A senha precisa ter ao menos 8 caracteres.';
+    if (form.confirmarSenha !== form.senha) novos.confirmarSenha = 'As senhas não coincidem.';
     setErros(novos);
     return Object.keys(novos).length === 0;
   }
@@ -54,21 +38,20 @@ export default function Cadastro() {
 
     setEnviando(true);
     try {
-      const mesNum = String(MESES.indexOf(form.mes) + 1).padStart(2, '0');
-      const diaNum = String(form.dia).padStart(2, '0');
-
       await cadastrar({
-        nome: form.nome,
-        contato: form.contato,
+        name: form.nome.trim(),
+        email: form.email.trim(),
         password: form.senha,
-        data_nascimento: `${form.ano}-${mesNum}-${diaNum}`,
-        genero: form.genero,
-        profissao: form.profissao,
-        uf: form.uf,
-        cidade: form.cidade,
+        password_confirmation: form.confirmarSenha,
       });
-      navigate('/login');
+      // O Laravel já cria a sessão no cadastro; leva a pessoa direto ao perfil.
+      navigate('/perfil', { replace: true });
     } catch (err) {
+      setErros({
+        nome: err.errors?.name?.[0],
+        email: err.errors?.email?.[0],
+        senha: err.errors?.password?.[0],
+      });
       setErroGeral(err.message);
     } finally {
       setEnviando(false);
@@ -100,13 +83,15 @@ export default function Cadastro() {
               erro={erros.nome}
             />
             <Input
-              id="contato"
-              label="Celular ou e-mail"
-              placeholder="Celular ou E-mail"
+              id="email"
+              label="E-mail"
+              type="email"
+              placeholder="seuemail@exemplo.com"
               icone={<IconeEmail />}
-              value={form.contato}
-              onChange={atualizar('contato')}
-              erro={erros.contato}
+              value={form.email}
+              onChange={atualizar('email')}
+              erro={erros.email}
+              autoComplete="email"
             />
             <Input
               id="senha"
@@ -117,30 +102,24 @@ export default function Cadastro() {
               value={form.senha}
               onChange={atualizar('senha')}
               erro={erros.senha}
+              autoComplete="new-password"
+            />
+            <Input
+              id="confirmar-senha"
+              label="Confirmar senha"
+              placeholder="Confirme sua senha"
+              type="password"
+              icone={<IconeCadeado />}
+              value={form.confirmarSenha}
+              onChange={atualizar('confirmarSenha')}
+              erro={erros.confirmarSenha}
+              autoComplete="new-password"
             />
           </fieldset>
 
-          {/* BLOCO 2: Data de nascimento */}
-          <fieldset className="cadastro-grupo">
-            <legend>Data de nascimento :</legend>
-            <div className="cadastro-linha cadastro-linha--3">
-              <Select id="dia" label="Dia" placeholder="Dia" options={DIAS} value={form.dia} onChange={atualizar('dia')} />
-              <Select id="mes" label="Mês" placeholder="Mês" options={MESES} value={form.mes} onChange={atualizar('mes')} />
-              <Select id="ano" label="Ano" placeholder="Ano" options={ANOS} value={form.ano} onChange={atualizar('ano')} />
-            </div>
-            {erros.dataNascimento && <span className="campo-erro" role="alert">{erros.dataNascimento}</span>}
-          </fieldset>
-
-          {/* BLOCO 3: Dados complementares */}
-          <fieldset className="cadastro-grupo">
-            <legend>Dados complementares :</legend>
-            <div className="cadastro-linha cadastro-linha--4">
-              <Select id="genero" label="Gênero" placeholder="Gênero" options={GENEROS} value={form.genero} onChange={atualizar('genero')} />
-              <Input id="profissao" label="Profissão" placeholder="Profissão" value={form.profissao} onChange={atualizar('profissao')} />
-              <Select id="uf" label="UF" placeholder="UF" options={UFS} value={form.uf} onChange={atualizar('uf')} />
-              <Input id="cidade" label="Cidade" placeholder="Cidade" value={form.cidade} onChange={atualizar('cidade')} />
-            </div>
-          </fieldset>
+          <p className="cadastro-aviso" role="note">
+            Depois do cadastro, você poderá completar profissão, localização e outros dados no seu perfil.
+          </p>
 
           <p className="cadastro-termos">
             Ao clicar em Cadastre-se, você concorda com os nossos{' '}
