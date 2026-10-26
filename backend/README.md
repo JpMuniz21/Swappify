@@ -38,7 +38,11 @@ Use os comandos PHP e Composer pelo docker compose exec backend. Execute os coma
 
 ## Banco e Supabase
 
-O driver PostgreSQL está preparado para a integração futura. Preencha os dados DB_* no .env local quando for conectar o Supabase. Não é necessário adicionar um banco ao Compose para usar Supabase hospedado.
+O driver PostgreSQL está preparado para o Supabase. Antes de usar qualquer CRUD,
+crie `backend/.env` a partir de `backend/.env.example` e preencha os dados reais
+`DB_HOST`, `DB_USERNAME` e `DB_PASSWORD` fornecidos pelo projeto no Supabase.
+Esses valores, assim como `APP_KEY`, ficam somente no `.env` local e nunca devem ir
+para o Git. Não é necessário adicionar um banco ao Compose para usar Supabase hospedado.
 
 As rotas de verificação não acessam o banco. O CRUD do próprio usuário e a autenticação por sessão estão implementados; requerem banco configurado e migrations para uso manual. Os testes usam SQLite em memória. Sessões e cache usam arquivos; filas usam execução síncrona. A conexão Supabase ainda precisa ser configurada. Nenhuma migration é executada automaticamente.
 
