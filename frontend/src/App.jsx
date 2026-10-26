@@ -4,6 +4,7 @@ import Cadastro from './pages/Cadastro/Cadastro';
 import Profile from './pages/Profile/Profile';
 import Chat from './pages/Chat/chat';
 import Configuracoes from './pages/Configuracoes/Configuracoes';
+import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/perfil" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/configuracoes" element={<Configuracoes />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       </Routes>
     </BrowserRouter>
   );
