@@ -11,9 +11,9 @@ Na raiz da pasta Swappify (onde está docker-compose.yml), execute:
 docker compose up --build -d
 ```
 
-Abra http://localhost:8080. A página inicial está em branco, pronta para receber a interface.
+Abra http://localhost:8080. O frontend usa a API em http://localhost:8000/api; o Compose configura a origem CORS e a URL da API para esses endereços.
 
-O backend Laravel inicia junto com o frontend. A API fica em http://localhost:8000 e a verificação JSON em http://localhost:8000/api/health. Na primeira inicialização, aguarde a instalação das dependências. O Supabase será conectado em uma etapa posterior; as rotas de verificação não exigem banco.
+O backend Laravel inicia junto com o frontend. A API fica em http://localhost:8000 e a verificação JSON em http://localhost:8000/api/health. Na primeira inicialização, aguarde a instalação das dependências. Cadastro e login também exigem `backend/.env` configurado com um banco PostgreSQL acessível e as migrations aplicadas; as rotas de verificação não exigem banco.
 Edite os arquivos normalmente no editor: as alterações em frontend/src e frontend/public são refletidas automaticamente no navegador.
 Node.js e as dependências ficam dentro da imagem Linux; node_modules do computador não é utilizado.
 

@@ -44,24 +44,34 @@ crie `backend/.env` a partir de `backend/.env.example` e preencha os dados reais
 Esses valores, assim como `APP_KEY`, ficam somente no `.env` local e nunca devem ir
 para o Git. Não é necessário adicionar um banco ao Compose para usar Supabase hospedado.
 
-As rotas de verificação não acessam o banco. O CRUD do próprio usuário e a autenticação por sessão estão implementados; requerem banco configurado e migrations para uso manual. Os testes usam SQLite em memória. Sessões e cache usam arquivos; filas usam execução síncrona. A conexão Supabase ainda precisa ser configurada. Nenhuma migration é executada automaticamente.
+As rotas de verificação não acessam o banco. O CRUD do próprio usuário e a autenticação por sessão estão implementados; requerem banco configurado e migrations aplicadas. Os testes usam SQLite em memória. Sessões e cache usam arquivos; filas usam execução síncrona. Nenhuma migration é executada automaticamente.
 
 ## Estrutura de banco e CRUD de serviços
 
-As migrations deste sprint criam as entidades de base do DER necessárias para
-serviços: `localizacoes`, `categorias`, os campos de perfil de `users` e
-`servicos`. A relação é: uma localização possui usuários; um usuário e uma
-categoria possuem vários serviços.
+As migrations criam as tabelas necessárias para autenticação e serviços:
+`users`, `password_reset_tokens`, `sessions`, `localizacoes`, `categorias` e
+`servicos`. Cadastro e login não funcionam até que as migrations sejam
+aplicadas ao banco configurado.
 
-Depois que a equipe conectar o PostgreSQL/Supabase, execute:
+Depois de configurar o PostgreSQL/Supabase hospedado em `backend/.env`, execute:
 
 ```sh
-docker compose exec backend php artisan migrate --seed
+docker compose exec backend php artisan migrate
+```
+
+Para criar dados de demonstração de serviços, execute também:
+
+```sh
+docker compose exec backend php artisan db:seed
 docker compose exec backend php artisan test --filter=ServicoCrudTest
 ```
 
 O seeder cria uma localização, três categorias, um usuário e um serviço de
 exemplo para facilitar os testes.
+
+No Compose, `FRONTEND_URL` e `VITE_API_URL` usam por padrão as origens
+`http://localhost:8080` e `http://localhost:8000/api`. Atualize esses valores
+se alterar as portas locais.
 
 ### Rotas de serviços
 
