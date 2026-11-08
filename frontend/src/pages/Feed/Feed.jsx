@@ -1,30 +1,40 @@
-import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import { logout } from '../../services/authService';
-import avatar from '../../assets/lucas-avatar.jpg';
-import fotoPet from '../../assets/portfolio-pet.png';
+import { listarPostagens, criarPostagem } from '../../services/postagemService';
+import avatarPadrao from '../../assets/lucas-avatar.jpg';
 import logo from '../../assets/logo-swappify.svg';
 import './Feed.css';
 
 const INTERESSES = ['Design', 'Marketing', 'Tecnologia', 'Educação', 'Pet'];
 const FILTROS = { servico: '', cidade: '', distancia: '', disponibilidade: '', interesses: [] };
 
-const POSTS_INICIAIS = [
-  { 
-    id: 'pet', 
-    nome: 'Eliza Martins', 
-    profissao: 'Cuidadora de pets', 
-    horario: 'Há 1h', 
-    texto: 'Precisa de alguém de confiança para cuidar do seu pet? 🐾 Sou apaixonada por animais e estou disponível para pet sitting e passeios. Tenho experiência e cuidado para que seu bichinho fique feliz enquanto você resolve seus compromissos.', 
-    tags: '#TrocaDeServiços #PetSitter #EconomiaColaborativa', 
-    imagem: fotoPet, 
-    servico: 'Pet', 
-    cidade: 'Fortaleza', 
-    distancia: 5, 
-    disponibilidade: 'Durante a semana' 
-  }
-];
+function tempoRelativo(data) {
+  if (!data) return '';
+  const minutos = Math.floor((Date.now() - new Date(data).getTime()) / 60000);
+  if (minutos < 1) return 'Agora';
+  if (minutos < 60) return `Há ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `Há ${horas}h`;
+  const dias = Math.floor(horas / 24);
+  if (dias < 7) return `Há ${dias}d`;
+  return new Date(data).toLocaleDateString('pt-BR');
+}
+
+// Converte a postagem da API (PostagemResource) para o formato usado pelo card.
+// A categoria escolhida no composer é salva em "titulo".
+function paraPost(api) {
+  return {
+    id: api.id,
+    nome: api.usuario?.name ?? 'Usuário',
+    profissao: api.usuario?.profession ?? '',
+    horario: tempoRelativo(api.data_publicacao),
+    texto: api.conteudo,
+    imagem: api.url_anexo || null,
+    servico: INTERESSES.includes(api.titulo) ? api.titulo : '',
+  };
+}
 
 function Icone({ tipo }) {
   const desenhos = {
@@ -44,73 +54,67 @@ function Icone({ tipo }) {
 
 export default function Feed() {
   const navigate = useNavigate();
-  const arquivoRef = useRef(null);
-  
+  const { usuario } = useOutletContext() ?? {};
+  const nomeUsuario = usuario?.name ?? 'Meu perfil';
+  const avatarUsuario = usuario?.avatar_url || avatarPadrao;
+
   const [texto, setTexto] = useState('');
   const [servicoSelecionado, setServicoSelecionado] = useState('');
-  const [midia, setMidia] = useState(null);
-  
-  const [posts, setPosts] = useState(POSTS_INICIAIS);
+
+  const [posts, setPosts] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [publicando, setPublicando] = useState(false);
   const [filtros, setFiltros] = useState(FILTROS);
   const [aplicados, setAplicados] = useState(FILTROS);
   const [mais, setMais] = useState(false);
   const [aviso, setAviso] = useState('');
 
-  function escolherMidia(tipo) {
-    arquivoRef.current.accept = `${tipo}/*`;
-    arquivoRef.current.click();
+  useEffect(() => {
+    let ativo = true;
+    listarPostagens()
+      .then((lista) => { if (ativo) setPosts(lista.map(paraPost)); })
+      .catch(() => { if (ativo) setAviso('Não foi possível carregar as publicações.'); })
+      .finally(() => { if (ativo) setCarregando(false); });
+    return () => { ativo = false; };
+  }, []);
+
+  function escolherMidia() {
+    setAviso('O envio de fotos e vídeos estará disponível em breve.');
   }
 
-  function carregarMidia(e) {
-    const arquivo = e.target.files?.[0];
-    if (!arquivo) return;
-    if (!/^(image|video)\//.test(arquivo.type) || arquivo.size > 20 * 1024 * 1024) {
-      setAviso('Escolha uma foto ou vídeo de até 20 MB.');
-      e.target.value = '';
-      return;
-    }
-    const leitor = new FileReader();
-    leitor.onload = () => { 
-      setMidia({ url: leitor.result, video: arquivo.type.startsWith('video') }); 
-      setAviso(''); 
-    };
-    leitor.onerror = () => setAviso('Não foi possível abrir o arquivo. Tente novamente.');
-    leitor.readAsDataURL(arquivo);
-    e.target.value = '';
-  }
-
-  function publicar(e) {
+  async function publicar(e) {
     e.preventDefault();
-    if (!texto.trim() && !midia) return;
+    const conteudo = texto.trim();
+    if (!conteudo || publicando) return;
 
-    const novoPost = {
-      id: crypto.randomUUID(),
-      nome: 'Lucas Vasconcelo',
-      profissao: 'Empreendedor',
-      horario: 'Agora',
-      texto: texto.trim(),
-      avatar,
-      imagem: midia && !midia.video ? midia.url : null,
-      video: midia?.video ? midia.url : null,
-      servico: servicoSelecionado || 'Outros',
-      cidade: 'Fortaleza',
-      distancia: 0,
-      disponibilidade: 'A combinar'
-    };
-
-    setPosts(atual => [novoPost, ...atual]);
-    setTexto('');
-    setServicoSelecionado('');
-    setMidia(null);
-    setAviso('Publicação adicionada com sucesso!');
+    setPublicando(true);
+    try {
+      const criada = await criarPostagem({
+        titulo: servicoSelecionado || 'Publicação',
+        conteudo,
+      });
+      setPosts(atual => [paraPost(criada), ...atual]);
+      setTexto('');
+      setServicoSelecionado('');
+      setAviso('Publicação adicionada com sucesso!');
+    } catch (erro) {
+      if (erro.status === 401 || erro.status === 419) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      const primeiroErro = Object.values(erro.errors ?? {})[0]?.[0];
+      setAviso(primeiroErro ?? erro.message ?? 'Não foi possível publicar. Tente novamente.');
+    } finally {
+      setPublicando(false);
+    }
   }
 
   async function sair() {
-    try { 
-      await logout(); 
-      navigate('/login'); 
-    } catch { 
-      setAviso('Não foi possível sair. Tente novamente.'); 
+    try {
+      await logout();
+      navigate('/login');
+    } catch {
+      setAviso('Não foi possível sair. Tente novamente.');
     }
   }
 
@@ -124,22 +128,22 @@ export default function Feed() {
 
   return (
     <div className="feed-page">
-      <Navbar onLogout={sair} onEditProfile={() => navigate('/perfil')} />
+      <Navbar usuario={usuario} onLogout={sair} onEditProfile={() => navigate('/perfil')} />
       <div className="feed-layout">
-        
+
         <aside className="feed-sidebar" aria-label="Navegação do feed">
           <Link to="/perfil" className="feed-profile">
-            <img src={avatar} alt="" />
-            <span><strong>Lucas Vasconcelo</strong><small>Ver meu perfil</small></span>
+            <img src={avatarUsuario} alt="" />
+            <span><strong>{nomeUsuario}</strong><small>Ver meu perfil</small></span>
           </Link>
           <nav className="feed-menu" aria-label="Menu principal">
             <Link to="/feed" aria-current="page"><Icone tipo="busca" />Descobrir</Link>
-            <button onClick={() => setAviso('Matches estarão disponíveis em breve.')}><Icone tipo="coracao" />Matches</button>
+            <Link to="/match"><Icone tipo="coracao" />Matches</Link>
             <Link to="/chat"><Icone tipo="mensagem" />Mensagens</Link>
-            <button onClick={() => setAviso('Favoritos estarão disponíveis em breve.')}><Icone tipo="estrela" />Favoritos</button>
-            <button onClick={() => setAviso('Minhas trocas estarão disponíveis em breve.')}><Icone tipo="troca" />Minhas Trocas</button>
-            <button onClick={() => setAviso('Agendamentos estarão disponíveis em breve.')}><Icone tipo="agenda" />Agendamentos</button>
-            <Link to="/perfil"><Icone tipo="ajustes" />Configurações</Link>
+            <Link to="/favoritos"><Icone tipo="estrela" />Favoritos</Link>
+            <Link to="/minhas-trocas"><Icone tipo="troca" />Minhas Trocas</Link>
+            <Link to="/agendamentos"><Icone tipo="agenda" />Agendamentos</Link>
+            <Link to="/configuracoes"><Icone tipo="ajustes" />Configurações</Link>
           </nav>
           <div className="feed-ad">
             <div className="feed-ad-art">
@@ -164,17 +168,10 @@ export default function Feed() {
               maxLength={3000} 
             />
 
-            {midia && (
-              <div className="feed-preview">
-                {midia.video ? <video src={midia.url} controls /> : <img src={midia.url} alt="Prévia da foto selecionada" />}
-                <button type="button" onClick={() => setMidia(null)}>Remover mídia</button>
-              </div>
-            )}
-
             <div className="feed-composer-actions">
               <div className="feed-composer-buttons">
-                <button type="button" onClick={() => escolherMidia('image')}><Icone tipo="foto" />Foto</button>
-                <button type="button" onClick={() => escolherMidia('video')}><Icone tipo="video" />Vídeo</button>
+                <button type="button" onClick={escolherMidia}><Icone tipo="foto" />Foto</button>
+                <button type="button" onClick={escolherMidia}><Icone tipo="video" />Vídeo</button>
                 
                 <select 
                   className="feed-category-select"
@@ -186,11 +183,12 @@ export default function Feed() {
                 </select>
               </div>
 
-              {(texto.trim() || midia) && (
-                <button className="feed-publish" type="submit">Publicar</button>
+              {texto.trim() && (
+                <button className="feed-publish" type="submit" disabled={publicando}>
+                  {publicando ? 'Publicando…' : 'Publicar'}
+                </button>
               )}
             </div>
-            <input ref={arquivoRef} type="file" hidden onChange={carregarMidia} />
           </form>
 
           {aviso && (
@@ -222,8 +220,14 @@ export default function Feed() {
               </article>
             ))}
 
-            {!visiveis.length && (
-              <p className="feed-empty">Nenhuma publicação encontrada. Experimente limpar os filtros.</p>
+            {carregando && <p className="feed-empty" role="status">Carregando publicações…</p>}
+
+            {!carregando && !visiveis.length && (
+              <p className="feed-empty">
+                {posts.length
+                  ? 'Nenhuma publicação encontrada. Experimente limpar os filtros.'
+                  : 'Ainda não há publicações. Que tal fazer a primeira?'}
+              </p>
             )}
           </div>
         </main>
