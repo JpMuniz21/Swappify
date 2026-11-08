@@ -44,8 +44,8 @@ export default function Cadastro() {
         password: form.senha,
         password_confirmation: form.confirmarSenha,
       });
-      // O Laravel já cria a sessão no cadastro; leva a pessoa direto ao perfil.
-      navigate('/perfil', { replace: true });
+      // O Laravel já cria a sessão no cadastro; leva a pessoa direto ao feed.
+      navigate('/feed', { replace: true });
     } catch (err) {
       setErros({
         nome: err.errors?.name?.[0],
