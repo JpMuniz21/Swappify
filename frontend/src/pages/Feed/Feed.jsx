@@ -9,7 +9,22 @@ import './Feed.css';
 
 const INTERESSES = ['Design', 'Marketing', 'Tecnologia', 'Educação', 'Pet'];
 const FILTROS = { servico: '', cidade: '', distancia: '', disponibilidade: '', interesses: [] };
-const POSTS = [{ id: 'pet', nome: 'Eliza Martins', profissao: 'Cuidadora de pets', horario: 'Há 1h', texto: 'Precisa de alguém de confiança para cuidar do seu pet? 🐾 Sou apaixonada por animais e estou disponível para pet sitting e passeios. Tenho experiência e cuidado para que seu bichinho fique feliz enquanto você resolve seus compromissos.', tags: '#TrocaDeServiços #PetSitter #EconomiaColaborativa', imagem: fotoPet, servico: 'Pet', cidade: 'Fortaleza', distancia: 5, disponibilidade: 'Durante a semana' }];
+
+const POSTS_INICIAIS = [
+  { 
+    id: 'pet', 
+    nome: 'Eliza Martins', 
+    profissao: 'Cuidadora de pets', 
+    horario: 'Há 1h', 
+    texto: 'Precisa de alguém de confiança para cuidar do seu pet? 🐾 Sou apaixonada por animais e estou disponível para pet sitting e passeios. Tenho experiência e cuidado para que seu bichinho fique feliz enquanto você resolve seus compromissos.', 
+    tags: '#TrocaDeServiços #PetSitter #EconomiaColaborativa', 
+    imagem: fotoPet, 
+    servico: 'Pet', 
+    cidade: 'Fortaleza', 
+    distancia: 5, 
+    disponibilidade: 'Durante a semana' 
+  }
+];
 
 function Icone({ tipo }) {
   const desenhos = {
@@ -30,9 +45,12 @@ function Icone({ tipo }) {
 export default function Feed() {
   const navigate = useNavigate();
   const arquivoRef = useRef(null);
+  
   const [texto, setTexto] = useState('');
+  const [servicoSelecionado, setServicoSelecionado] = useState('');
   const [midia, setMidia] = useState(null);
-  const [posts, setPosts] = useState(POSTS);
+  
+  const [posts, setPosts] = useState(POSTS_INICIAIS);
   const [filtros, setFiltros] = useState(FILTROS);
   const [aplicados, setAplicados] = useState(FILTROS);
   const [mais, setMais] = useState(false);
@@ -42,6 +60,7 @@ export default function Feed() {
     arquivoRef.current.accept = `${tipo}/*`;
     arquivoRef.current.click();
   }
+
   function carregarMidia(e) {
     const arquivo = e.target.files?.[0];
     if (!arquivo) return;
@@ -51,21 +70,50 @@ export default function Feed() {
       return;
     }
     const leitor = new FileReader();
-    leitor.onload = () => { setMidia({ url: leitor.result, video: arquivo.type.startsWith('video') }); setAviso(''); };
+    leitor.onload = () => { 
+      setMidia({ url: leitor.result, video: arquivo.type.startsWith('video') }); 
+      setAviso(''); 
+    };
     leitor.onerror = () => setAviso('Não foi possível abrir o arquivo. Tente novamente.');
     leitor.readAsDataURL(arquivo);
     e.target.value = '';
   }
+
   function publicar(e) {
     e.preventDefault();
     if (!texto.trim() && !midia) return;
-    setPosts(atual => [{ id: crypto.randomUUID(), nome: 'Lucas Vasconcelo', profissao: 'Empreendedor', horario: 'Agora', texto: texto.trim(), avatar, imagem: midia && !midia.video ? midia.url : null, video: midia?.video ? midia.url : null }, ...atual]);
-    setTexto(''); setMidia(null); setAviso('Publicação adicionada nesta sessão.');
+
+    const novoPost = {
+      id: crypto.randomUUID(),
+      nome: 'Lucas Vasconcelo',
+      profissao: 'Empreendedor',
+      horario: 'Agora',
+      texto: texto.trim(),
+      avatar,
+      imagem: midia && !midia.video ? midia.url : null,
+      video: midia?.video ? midia.url : null,
+      servico: servicoSelecionado || 'Outros',
+      cidade: 'Fortaleza',
+      distancia: 0,
+      disponibilidade: 'A combinar'
+    };
+
+    setPosts(atual => [novoPost, ...atual]);
+    setTexto('');
+    setServicoSelecionado('');
+    setMidia(null);
+    setAviso('Publicação adicionada com sucesso!');
   }
+
   async function sair() {
-    try { await logout(); navigate('/login'); }
-    catch { setAviso('Não foi possível sair. Tente novamente.'); }
+    try { 
+      await logout(); 
+      navigate('/login'); 
+    } catch { 
+      setAviso('Não foi possível sair. Tente novamente.'); 
+    }
   }
+
   const visiveis = posts.filter(post =>
     (!aplicados.servico || post.servico === aplicados.servico) &&
     (!aplicados.cidade || post.cidade === aplicados.cidade) &&
@@ -73,52 +121,148 @@ export default function Feed() {
     (!aplicados.disponibilidade || post.disponibilidade === aplicados.disponibilidade) &&
     (!aplicados.interesses.length || aplicados.interesses.includes(post.servico))
   );
-  return <div className="feed-page">
-    <Navbar onLogout={sair} onEditProfile={() => navigate('/perfil')} />
-    <div className="feed-layout">
-      <aside className="feed-sidebar" aria-label="Navegação do feed">
-        <Link to="/perfil" className="feed-profile"><img src={avatar} alt="" /><span><strong>Lucas Vasconcelo</strong><small>Ver meu perfil</small></span></Link>
-        <nav className="feed-menu" aria-label="Menu principal">
-          <Link to="/feed" aria-current="page"><Icone tipo="busca" />Descobrir</Link>
-          <button onClick={() => setAviso('Matches estarão disponíveis em breve.')}><Icone tipo="coracao" />Matches</button>
-          <Link to="/chat"><Icone tipo="mensagem" />Mensagens</Link>
-          <button onClick={() => setAviso('Favoritos estarão disponíveis em breve.')}><Icone tipo="estrela" />Favoritos</button>
-          <button onClick={() => setAviso('Minhas trocas estarão disponíveis em breve.')}><Icone tipo="troca" />Minhas Trocas</button>
-          <button onClick={() => setAviso('Agendamentos estarão disponíveis em breve.')}><Icone tipo="agenda" />Agendamentos</button>
-          <Link to="/perfil"><Icone tipo="ajustes" />Configurações</Link>
-        </nav>
-        <div className="feed-ad"><div className="feed-ad-art"><img src={logo} alt="" /><span>Seu talento vale<br /><strong>uma nova troca.</strong></span></div><strong>Anuncie com Swappify</strong></div>
-      </aside>
-      <main className="feed-main" aria-label="Publicações">
-        <h1 className="feed-sr-only">Feed de serviços</h1>
-        <form className="feed-composer" onSubmit={publicar}>
-          <label className="feed-sr-only" htmlFor="feed-texto">Faça uma postagem</label>
-          <textarea id="feed-texto" placeholder="Faça uma postagem" value={texto} onChange={e => setTexto(e.target.value)} rows={1} maxLength={3000} />
-          {midia && <div className="feed-preview">{midia.video ? <video src={midia.url} controls /> : <img src={midia.url} alt="Prévia da foto selecionada" />}<button type="button" onClick={() => setMidia(null)}>Remover mídia</button></div>}
-          <div className="feed-composer-actions"><button type="button" onClick={() => escolherMidia('image')}><Icone tipo="foto" />Foto</button><button type="button" onClick={() => escolherMidia('video')}><Icone tipo="video" />Vídeo</button>{(texto.trim() || midia) && <button className="feed-publish" type="submit">Publicar</button>}</div>
-          <input ref={arquivoRef} type="file" hidden onChange={carregarMidia} />
-        </form>
-        {aviso && <p className="feed-notice" role="status">{aviso}<button onClick={() => setAviso('')} aria-label="Fechar aviso">×</button></p>}
-        <div className="feed-posts">{visiveis.map(post => <article className="feed-post" key={post.id}>
-          <header className="feed-post-header"><div className="feed-author-avatar">{post.avatar ? <img src={post.avatar} alt="" /> : <Icone tipo="pessoa" />}</div><div><strong>{post.nome}</strong><small>{post.profissao}</small></div><span className="feed-post-time">{post.horario}</span></header>
-          <p className="feed-post-text">{post.texto}{post.tags && <><br /><span>{post.tags}</span></>}</p>
-          {post.imagem && <img className="feed-post-image" src={post.imagem} alt={post.id === 'pet' ? 'Serviço de cuidados com pets' : 'Foto da publicação'} />}
-          {post.video && <video className="feed-post-image" src={post.video} controls />}
-        </article>)}{!visiveis.length && <p className="feed-empty">Nenhuma publicação encontrada. Experimente limpar os filtros.</p>}</div>
-      </main>
-      <aside className="feed-filters" aria-label="Filtros de publicações">
-        <div className="feed-filter-heading"><h2>Filtrar</h2><button onClick={() => { setFiltros(FILTROS); setAplicados(FILTROS); }}>Limpar</button></div>
-        <form onSubmit={e => { e.preventDefault(); setAplicados({ ...filtros, interesses: [...filtros.interesses] }); }}>
-          {[
-            ['servico', 'O que você precisa?', 'Qualquer serviço', INTERESSES],
-            ['cidade', 'Localização', 'Todas as cidades', ['Fortaleza', 'São Paulo', 'Rio de Janeiro']],
-            ['distancia', 'Distância', 'Qualquer distância', ['5', '15', '30', '50']],
-            ['disponibilidade', 'Disponibilidade', 'Qualquer dia', ['Durante a semana', 'Fim de semana']],
-          ].map(([campo, titulo, placeholder, opcoes]) => <label className="feed-filter-field" key={campo} htmlFor={`feed-${campo}`}>{titulo}<select id={`feed-${campo}`} value={filtros[campo]} onChange={e => setFiltros({ ...filtros, [campo]: e.target.value })}><option value="">{placeholder}</option>{opcoes.map(opcao => <option key={opcao} value={opcao}>{campo === 'distancia' ? `Até ${opcao} km` : opcao}</option>)}</select></label>)}
-          <fieldset className="feed-interests"><legend>Interesses em comum</legend>{INTERESSES.slice(0, mais ? undefined : 4).map(interesse => <label key={interesse}><input type="checkbox" checked={filtros.interesses.includes(interesse)} onChange={e => setFiltros({ ...filtros, interesses: e.target.checked ? [...filtros.interesses, interesse] : filtros.interesses.filter(item => item !== interesse) })} />{interesse}</label>)}<button type="button" onClick={() => setMais(!mais)}>{mais ? 'Ver menos' : 'Ver mais'} ⌄</button></fieldset>
-          <button type="submit" className="feed-apply">Aplicar filtros</button>
-        </form>
-      </aside>
+
+  return (
+    <div className="feed-page">
+      <Navbar onLogout={sair} onEditProfile={() => navigate('/perfil')} />
+      <div className="feed-layout">
+        
+        <aside className="feed-sidebar" aria-label="Navegação do feed">
+          <Link to="/perfil" className="feed-profile">
+            <img src={avatar} alt="" />
+            <span><strong>Lucas Vasconcelo</strong><small>Ver meu perfil</small></span>
+          </Link>
+          <nav className="feed-menu" aria-label="Menu principal">
+            <Link to="/feed" aria-current="page"><Icone tipo="busca" />Descobrir</Link>
+            <button onClick={() => setAviso('Matches estarão disponíveis em breve.')}><Icone tipo="coracao" />Matches</button>
+            <Link to="/chat"><Icone tipo="mensagem" />Mensagens</Link>
+            <button onClick={() => setAviso('Favoritos estarão disponíveis em breve.')}><Icone tipo="estrela" />Favoritos</button>
+            <button onClick={() => setAviso('Minhas trocas estarão disponíveis em breve.')}><Icone tipo="troca" />Minhas Trocas</button>
+            <button onClick={() => setAviso('Agendamentos estarão disponíveis em breve.')}><Icone tipo="agenda" />Agendamentos</button>
+            <Link to="/perfil"><Icone tipo="ajustes" />Configurações</Link>
+          </nav>
+          <div className="feed-ad">
+            <div className="feed-ad-art">
+              <img src={logo} alt="" />
+              <span>Seu talento vale<br /><strong>uma nova troca.</strong></span>
+            </div>
+            <strong>Anuncie com Swappify</strong>
+          </div>
+        </aside>
+
+        <main className="feed-main" aria-label="Publicações">
+          <h1 className="feed-sr-only">Feed de serviços</h1>
+
+          <form className="feed-composer" onSubmit={publicar}>
+            <label className="feed-sr-only" htmlFor="feed-texto">Faça uma postagem</label>
+            <textarea 
+              id="feed-texto" 
+              placeholder="No que você está pensando ou qual serviço precisa/oferece?" 
+              value={texto} 
+              onChange={e => setTexto(e.target.value)} 
+              rows={3} 
+              maxLength={3000} 
+            />
+
+            {midia && (
+              <div className="feed-preview">
+                {midia.video ? <video src={midia.url} controls /> : <img src={midia.url} alt="Prévia da foto selecionada" />}
+                <button type="button" onClick={() => setMidia(null)}>Remover mídia</button>
+              </div>
+            )}
+
+            <div className="feed-composer-actions">
+              <div className="feed-composer-buttons">
+                <button type="button" onClick={() => escolherMidia('image')}><Icone tipo="foto" />Foto</button>
+                <button type="button" onClick={() => escolherMidia('video')}><Icone tipo="video" />Vídeo</button>
+                
+                <select 
+                  className="feed-category-select"
+                  value={servicoSelecionado} 
+                  onChange={e => setServicoSelecionado(e.target.value)}
+                >
+                  <option value="">Categoria da troca...</option>
+                  {INTERESSES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+
+              {(texto.trim() || midia) && (
+                <button className="feed-publish" type="submit">Publicar</button>
+              )}
+            </div>
+            <input ref={arquivoRef} type="file" hidden onChange={carregarMidia} />
+          </form>
+
+          {aviso && (
+            <p className="feed-notice" role="status">
+              {aviso}
+              <button onClick={() => setAviso('')} aria-label="Fechar aviso">×</button>
+            </p>
+          )}
+
+          <div className="feed-posts">
+            {visiveis.map(post => (
+              <article className="feed-post" key={post.id}>
+                <header className="feed-post-header">
+                  <div className="feed-author-avatar">
+                    {post.avatar ? <img src={post.avatar} alt="" /> : <Icone tipo="pessoa" />}
+                  </div>
+                  <div>
+                    <strong>{post.nome}</strong>
+                    <small>{post.profissao} {post.servico ? `• ${post.servico}` : ''}</small>
+                  </div>
+                  <span className="feed-post-time">{post.horario}</span>
+                </header>
+                <p className="feed-post-text">
+                  {post.texto}
+                  {post.tags && <><br /><span className="feed-post-tags">{post.tags}</span></>}
+                </p>
+                {post.imagem && <img className="feed-post-image" src={post.imagem} alt="Mídia da publicação" />}
+                {post.video && <video className="feed-post-image" src={post.video} controls />}
+              </article>
+            ))}
+
+            {!visiveis.length && (
+              <p className="feed-empty">Nenhuma publicação encontrada. Experimente limpar os filtros.</p>
+            )}
+          </div>
+        </main>
+
+        <aside className="feed-filters" aria-label="Filtros de publicações">
+          <div className="feed-filter-heading">
+            <h2>Filtrar</h2>
+            <button onClick={() => { setFiltros(FILTROS); setAplicados(FILTROS); }}>Limpar</button>
+          </div>
+          <form onSubmit={e => { e.preventDefault(); setAplicados({ ...filtros, interesses: [...filtros.interesses] }); }}>
+            {[
+              ['servico', 'O que você precisa?', 'Qualquer serviço', INTERESSES],
+              ['cidade', 'Localização', 'Todas as cidades', ['Fortaleza', 'São Paulo', 'Rio de Janeiro']],
+              ['distancia', 'Distância', 'Qualquer distância', ['5', '15', '30', '50']],
+              ['disponibilidade', 'Disponibilidade', 'Qualquer dia', ['Durante a semana', 'Fim de semana']],
+            ].map(([campo, titulo, placeholder, opcoes]) => (
+              <label className="feed-filter-field" key={campo} htmlFor={`feed-${campo}`}>
+                {titulo}
+                <select id={`feed-${campo}`} value={filtros[campo]} onChange={e => setFiltros({ ...filtros, [campo]: e.target.value })}>
+                  <option value="">{placeholder}</option>
+                  {opcoes.map(opcao => <option key={opcao} value={opcao}>{campo === 'distancia' ? `Até ${opcao} km` : opcao}</option>)}
+                </select>
+              </label>
+            ))}
+            <fieldset className="feed-interests">
+              <legend>Interesses em comum</legend>
+              {INTERESSES.slice(0, mais ? undefined : 4).map(interesse => (
+                <label key={interesse}>
+                  <input type="checkbox" checked={filtros.interesses.includes(interesse)} onChange={e => setFiltros({ ...filtros, interesses: e.target.checked ? [...filtros.interesses, interesse] : filtros.interesses.filter(item => item !== interesse) })} />
+                  {interesse}
+                </label>
+              ))}
+              <button type="button" onClick={() => setMais(!mais)}>{mais ? 'Ver menos' : 'Ver mais'} ⌄</button>
+            </fieldset>
+            <button type="submit" className="feed-apply">Aplicar filtros</button>
+          </form>
+        </aside>
+
+      </div>
     </div>
-  </div>;
+  );
 }
