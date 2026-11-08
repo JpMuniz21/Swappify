@@ -1,0 +1,214 @@
+﻿/* MatchCard - card principal de perfil para a tela de match */
+
+.match-card {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(63, 38, 80, 0.13);
+  width: 100%;
+  max-width: 720px;
+  min-height: 340px;
+  transition: box-shadow 0.2s;
+  animation: matchCardEntrada 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes matchCardEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* animacoes de swipe */
+.match-card--saindo-direita {
+  animation: sairDireita 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.match-card--saindo-esquerda {
+  animation: sairEsquerda 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.match-card--entrando {
+  animation: matchCardEntrada 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes sairDireita {
+  to {
+    opacity: 0;
+    transform: translateX(120%) rotate(18deg);
+  }
+}
+
+@keyframes sairEsquerda {
+  to {
+    opacity: 0;
+    transform: translateX(-120%) rotate(-18deg);
+  }
+}
+
+/* coluna da foto */
+.match-card-foto-col {
+  position: relative;
+  overflow: hidden;
+  min-height: 340px;
+}
+
+.match-card-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.match-card-foto--placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #c9b8e0, #a888cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* overlay escuro com nome na foto */
+.match-card-foto-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(30, 12, 48, 0.85) 0%, transparent 100%);
+  padding: 40px 18px 18px;
+}
+
+.match-card-foto-nome {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.match-card-foto-prof {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* coluna de informacoes */
+.match-card-info-col {
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.match-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.match-card-nome {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.match-card-profissao {
+  font-size: 0.875rem;
+  color: #6b5e7c;
+  margin: 0;
+  font-weight: 400;
+}
+
+.match-card-local {
+  color: #8a7c9a;
+}
+
+/* bio */
+.match-card-bio {
+  font-size: 0.85rem;
+  color: #5c5666;
+  line-height: 1.65;
+  margin: 0;
+  flex: 1;
+}
+
+/* metricas */
+.match-card-metricas {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid #ece8f2;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.match-card-metrica-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  gap: 4px;
+  text-align: center;
+}
+
+.match-card-metrica-separador {
+  width: 1px;
+  background-color: #ece8f2;
+  align-self: stretch;
+}
+
+.match-card-metrica-valor-linha {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.match-card-estrela {
+  color: #f5a623;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.match-card-metrica-valor {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3f2650;
+  line-height: 1;
+}
+
+.match-card-metrica-valor--destaque {
+  font-size: 1.6rem;
+  color: #2c2336;
+}
+
+.match-card-metrica-rotulo {
+  font-size: 0.72rem;
+  color: #8c8490;
+  font-weight: 400;
+}
+
+/* responsivo */
+@media (max-width: 640px) {
+  .match-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: 240px 1fr;
+  }
+
+  .match-card-foto-col {
+    min-height: 240px;
+  }
+}

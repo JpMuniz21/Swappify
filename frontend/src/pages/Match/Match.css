@@ -1,0 +1,160 @@
+﻿/* Pagina de Match */
+
+.match-pagina {
+  min-height: 100vh;
+  background-color: #ece9f1;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 48px;
+}
+
+/* layout principal: seta | central | seta */
+.match-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 860px;
+}
+
+/* area central: contador + card + acoes */
+.match-central {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  min-width: 0;
+}
+
+/* setas de navegacao laterais */
+.match-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: #6b35a8;
+  box-shadow: 0 4px 14px rgba(63, 38, 80, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.match-nav-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(63, 38, 80, 0.18);
+}
+
+.match-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* contador de pontos (progresso) */
+.match-contador {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.match-contador-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d5cedf;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-block;
+}
+
+.match-contador-dot--ativo {
+  background: #6b35a8;
+  transform: scale(1.3);
+}
+
+.match-contador-dot--visto {
+  background: #c0b5d0;
+}
+
+/* estado sem mais perfis */
+.match-esgotado {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 56px 40px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(63, 38, 80, 0.1);
+  max-width: 440px;
+  width: 100%;
+}
+
+.match-esgotado-icone {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ede4f8, #ddd0f2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b884d6;
+  margin: 0 auto 20px;
+}
+
+.match-esgotado-titulo {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 10px;
+}
+
+.match-esgotado-texto {
+  font-size: 0.875rem;
+  color: #726c7c;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.match-esgotado-btn {
+  padding: 12px 32px;
+  border-radius: 9999px;
+  background: #6b35a8;
+  color: #ffffff;
+  border: none;
+  font-size: 0.925rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+
+.match-esgotado-btn:hover {
+  background: #5a2b8e;
+  transform: translateY(-1px);
+}
+
+/* responsivo */
+@media (max-width: 640px) {
+  .match-container {
+    gap: 12px;
+  }
+
+  .match-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .match-main {
+    padding: 20px 12px 40px;
+    align-items: flex-start;
+  }
+}

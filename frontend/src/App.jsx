@@ -6,6 +6,8 @@ import Chat from './pages/Chat/chat';
 import Feed from './pages/Feed/Feed';
 import Configuracoes from './pages/Configuracoes/Configuracoes';
 import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
+import Favoritos from './pages/Favoritos/Favoritos';
+import Match from './pages/Match/Match';
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/feed" element={<Feed />} />
         <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/favoritos" element={<Favoritos />} />
+        <Route path="/match" element={<Match />} />
       </Routes>
     </BrowserRouter>
   );
