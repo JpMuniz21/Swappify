@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController; // Controller responsável pelo cadastro e pelo próprio perfil.
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\PostagemController;
+use App\Http\Controllers\InteresseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController; // Registra os endereços HTTP.
 
@@ -19,6 +20,9 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::apiResource('postagens', PostagemController::class)
             ->parameters(['postagens' => 'postagem'])
             ->only(['store', 'update', 'destroy']);
+        Route::apiResource('interesses', InteresseController::class)
+            ->parameters(['interesses' => 'interesse'])
+            ->only(['index', 'store', 'destroy']);
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::delete('/me', [AccountController::class, 'destroy']); // Exclui a conta confirmando a senha.

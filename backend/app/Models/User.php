@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Postagem::class, 'usuario_id');
     }
+
+    public function interesses(): HasMany
+    {
+        return $this->hasMany(Interesse::class, 'usuario_id');
+    }
 }
