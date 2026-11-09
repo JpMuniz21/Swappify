@@ -212,3 +212,33 @@
     min-height: 240px;
   }
 }
+
+/* servico oferecido (vem da API) */
+.match-card-servico {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f4eefa;
+}
+
+.match-card-servico-rotulo {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a6aa8;
+}
+
+.match-card-servico-titulo {
+  font-size: 0.95rem;
+  color: #3f2650;
+}
+
+.match-card-servico-descricao {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #5c5666;
+}

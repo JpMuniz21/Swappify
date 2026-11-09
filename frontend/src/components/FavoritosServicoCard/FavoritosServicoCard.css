@@ -102,3 +102,10 @@
   color: #554e60;
   margin-left: 4px;
 }
+
+.fav-servico-match {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b35a8;
+}

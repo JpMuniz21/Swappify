@@ -58,7 +58,7 @@ function IconeServico({ tipo }) {
  * Exibe icone, titulo, descricao, prestador, avaliacao, tags e acoes.
  */
 export default function FavoritosServicoCard({ servico, onVerPerfil, onRemover }) {
-  const { id, titulo, descricao, prestador, avaliacao, tags, iconeTipo } = servico;
+  const { id, titulo, descricao, prestador, tags, iconeTipo, matchId } = servico;
 
   return (
     <article className="fav-servico-card" aria-label={`Servico favoritado: ${titulo}`}>
@@ -88,13 +88,19 @@ export default function FavoritosServicoCard({ servico, onVerPerfil, onRemover }
         {prestador && (
           <p className="fav-servico-prestador">
             Oferecido por: <strong>{prestador.nome}</strong>
+            {prestador.avaliacao != null && (
             <span className="fav-servico-prestador-avaliacao" aria-label={`Avaliacao ${prestador.avaliacao}`}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbd08" aria-hidden="true">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
               {prestador.avaliacao}
             </span>
+            )}
           </p>
+        )}
+
+        {matchId && (
+          <p className="fav-servico-match">Você tem um match ligado a este serviço</p>
         )}
 
         {tags?.length > 0 && (
@@ -108,6 +114,7 @@ export default function FavoritosServicoCard({ servico, onVerPerfil, onRemover }
 
       {/* acoes */}
       <div className="fav-card-acoes">
+        {onVerPerfil && (
         <button
           type="button"
           id={`btn-ver-perfil-${id}`}
@@ -121,6 +128,7 @@ export default function FavoritosServicoCard({ servico, onVerPerfil, onRemover }
           </svg>
           Ver perfil
         </button>
+        )}
         <button
           type="button"
           id={`btn-remover-servico-${id}`}

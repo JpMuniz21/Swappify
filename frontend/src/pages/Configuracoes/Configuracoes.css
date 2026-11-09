@@ -1,0 +1,425 @@
+.settings-page {
+    min-height: 100vh;
+    background: #ece9f1;
+    color: #2c2336;
+    font-family: inherit;
+}
+
+.settings-header {
+    min-height: 76px;
+    padding: 0 7%;
+    background: #563668;
+    border-bottom: 1px solid #e8e3ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.settings-logo {
+    color: #3f2650;
+    font-size: 1.65rem;
+    font-weight: 800;
+    text-decoration: none;
+    letter-spacing: -1px;
+}
+
+.settings-logo span {
+    color: #b884d6;
+}
+
+.settings-voltar {
+    color: #554e60;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.settings-voltar:hover,
+.settings-text-link:hover {
+    color: #825e9b;
+}
+
+.settings-main {
+    width: min(1100px, 90%);
+    margin: 0 auto;
+    padding: 42px 0 64px;
+}
+
+.settings-intro {
+    margin-bottom: 28px;
+}
+
+.settings-eyebrow {
+    color: #825e9b;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.settings-intro h1 {
+    margin: 8px 0;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    color: #2c2336;
+}
+
+.settings-intro p,
+.settings-titulo-secao p {
+    margin: 0;
+    color: #726c7c;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.settings-layout {
+    display: grid;
+    grid-template-columns: 255px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.settings-menu,
+.settings-content {
+    background: #fff;
+    border: 1px solid #e5deec;
+    border-radius: 22px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(63, 38, 80, 0.04);
+}
+
+.settings-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 13px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #554e60;
+    font: inherit;
+    font-size: 0.84rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.settings-menu-item:hover {
+    background: #f7f3fa;
+}
+
+.settings-menu-item.ativo {
+    background: #e8d9f2;
+    color: #3f2650;
+    font-weight: 700;
+}
+
+.settings-menu-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-menu-icone svg,
+.settings-icone-grande svg {
+    display: block;
+}
+
+.settings-menu-nome {
+    flex: 1;
+    text-align: left;
+}
+
+.settings-icone-grande {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.settings-menu-seta {
+    margin-left: auto;
+    font-size: 1.2rem;
+}
+
+.settings-content {
+    min-width: 0;
+    padding: 28px;
+}
+
+.settings-titulo-secao {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #eee9f3;
+    margin-bottom: 22px;
+}
+
+.settings-icone-grande {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #ede3f5;
+    color: #3f2650;
+    font-size: 1.5rem;
+}
+
+.settings-titulo-secao h2 {
+    margin: 0 0 5px;
+    font-size: 1.25rem;
+    color: #2c2336;
+}
+
+.settings-card {
+    border: 1px solid #e8e1ef;
+    border-radius: 16px;
+    padding: 4px 20px;
+    background: #fff;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 19px 0;
+    border-bottom: 1px solid #eee9f3;
+}
+
+.settings-option:last-child {
+    border-bottom: none;
+}
+
+.settings-option-texto {
+    min-width: 0;
+}
+
+.settings-option-texto h3,
+.settings-info-conta h3 {
+    margin: 0 0 5px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #382b43;
+}
+
+.settings-option-texto p,
+.settings-info-conta p {
+    margin: 0;
+    color: #82798b;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.settings-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    width: 46px;
+    height: 25px;
+    padding: 3px;
+    border: none;
+    border-radius: 99px;
+    background: #d9d6de;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.settings-switch span {
+    display: block;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px #0002;
+    transition: transform 0.2s;
+}
+
+.settings-switch.ligado {
+    background: #b884d6;
+}
+
+.settings-switch.ligado span {
+    transform: translateX(21px);
+}
+
+.settings-switch:focus-visible,
+.settings-menu-item:focus-visible,
+.settings-salvar:focus-visible {
+    outline: 3px solid #b884d6;
+    outline-offset: 3px;
+}
+
+.settings-acoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.settings-mensagem {
+    margin: 0;
+    color: #427b57;
+    font-size: 0.8rem;
+}
+
+.settings-salvar,
+.settings-botao-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 11px;
+    background: #3f2650;
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.settings-salvar:hover,
+.settings-botao-link:hover {
+    background: #5a3970;
+    transform: translateY(-1px);
+}
+
+.settings-info-conta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0;
+}
+
+.settings-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #dbcaec;
+    color: #3f2650;
+    font-weight: 800;
+}
+
+.settings-botao-link {
+    margin: 0 0 18px;
+}
+
+.settings-text-link {
+    flex-shrink: 0;
+    color: #6b4984;
+    font-size: 0.83rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.settings-aviso,
+.settings-ajuda {
+    padding: 15px;
+    border-radius: 10px;
+    background: #f7f3fa;
+    color: #65566f;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 16px 0;
+}
+
+@media (max-width: 760px) {
+    .settings-header {
+        padding: 0 5%;
+        min-height: 66px;
+    }
+
+    .settings-main {
+        width: 92%;
+        padding-top: 28px;
+    }
+
+    .settings-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .settings-menu {
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .settings-menu-item {
+        padding: 12px 9px;
+        font-size: 0.76rem;
+        gap: 7px;
+    }
+
+    .settings-menu-seta {
+        display: none;
+    }
+
+    .settings-content {
+        padding: 20px 16px;
+    }
+
+    .settings-option {
+        gap: 10px;
+    }
+
+    .settings-acoes {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .settings-salvar {
+        width: 100%;
+    }
+}
+
+.settings-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.settings-logo-img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.settings-logo-text {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+}
+
+
+@media (max-width: 380px) {
+    .settings-menu {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-voltar {
+        font-size: 0.78rem;
+    }
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
@@ -8,6 +8,9 @@ import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Volta para a página que a pessoa tentou abrir antes de ser mandada ao login (ver RotaProtegida).
+  const destino = location.state?.de ?? '/feed';
   const [identificacao, setIdentificacao] = useState(() => {
     try { return localStorage.getItem('swappify.email') ?? ''; }
     catch { return ''; }
@@ -39,7 +42,7 @@ export default function Login() {
         if (lembrar) localStorage.setItem('swappify.email', identificacao.trim());
         else localStorage.removeItem('swappify.email');
       } catch { /* Armazenamento pode estar bloqueado pelo navegador. */ }
-      navigate('/perfil', { replace: true });
+      navigate(destino, { replace: true });
     } catch (err) {
       setErros({
         identificacao: err.errors?.email?.[0],

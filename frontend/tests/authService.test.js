@@ -1,6 +1,6 @@
 import test, { afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { login, consultarPerfil, atualizarPerfil, excluirConta, logout } from '../src/services/authService.js';
+import { cadastrar, login, consultarPerfil, atualizarPerfil, excluirConta, logout } from '../src/services/authService.js';
 
 afterEach(() => mock.restoreAll());
 
@@ -17,6 +17,33 @@ test('login envia email, cookie e token CSRF; nenhuma escrita ocorre antes da se
   assert.equal(requests[1].options.credentials, 'include');
   assert.equal(requests[1].options.headers['X-CSRF-TOKEN'], 'token-atual');
   assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'ana@example.com', password: 'senha' });
+});
+
+test('cadastro envia os campos esperados pela API Laravel', async () => {
+  const requests = [];
+  mock.method(globalThis, 'fetch', async (url, options) => {
+    requests.push({ url, options });
+    return new Response(requests.length === 1
+      ? '{"csrf_token":"token-cadastro"}'
+      : '{"data":{"id":1,"name":"Ana"}}', { status: requests.length === 1 ? 200 : 201 });
+  });
+
+  await cadastrar({
+    name: 'Ana',
+    email: 'ana@example.com',
+    password: 'senha-segura',
+    password_confirmation: 'senha-segura',
+  });
+
+  assert.equal(requests[1].url, 'http://localhost:8000/api/register');
+  assert.equal(requests[1].options.credentials, 'include');
+  assert.equal(requests[1].options.headers['X-CSRF-TOKEN'], 'token-cadastro');
+  assert.deepEqual(JSON.parse(requests[1].options.body), {
+    name: 'Ana',
+    email: 'ana@example.com',
+    password: 'senha-segura',
+    password_confirmation: 'senha-segura',
+  });
 });
 
 test('perfil usa cookie sem solicitar token para uma leitura', async () => {

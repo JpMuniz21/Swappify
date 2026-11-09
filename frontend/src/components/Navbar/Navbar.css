@@ -232,3 +232,23 @@
     display: none;
   }
 }
+
+.navbar-notif-btn {
+  position: relative;
+}
+
+.navbar-notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: #c93b2b;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}

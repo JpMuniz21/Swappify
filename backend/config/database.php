@@ -97,6 +97,19 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // O banco (Supabase) fica longe: cada ida e volta custa ~120 ms.
+            // Prepares emulados enviam a consulta já montada em 1 ida e volta, em vez de 3
+            // (prepare + execute + fechamento). Os valores continuam escapados pelo PDO.
+            // Também é o modo recomendado para o pooler do Supabase (PgBouncer).
+            //
+            // DB_PERSISTENT=true reaproveita a conexão entre requisições do mesmo processo PHP,
+            // evitando abrir uma conexão TLS nova (~1 s) a cada requisição. Ligado no
+            // docker-compose de desenvolvimento; transações abertas são desfeitas pelo PDO
+            // ao fim de cada requisição.
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_PERSISTENT => (bool) env('DB_PERSISTENT', false),
+            ] : [],
         ],
 
         'sqlsrv' => [

@@ -1,12 +1,57 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/logo-swappify.svg';
 import defaultAvatar from '../../assets/lucas-avatar.jpg';
+import NotificacoesModal from '../NotificacoesModal/NotificacoesModal';
+import { listarNotificacoes, lerIdsLidos, salvarIdsLidos } from '../../services/notificacaoService';
 import './Navbar.css';
 
 export default function Navbar({ usuario, onLogout, onEditProfile }) {
   const [menuAberto, setMenuAberto] = useState(false);
   const menuRef = useRef(null);
+
+  const [notifAberto, setNotifAberto] = useState(false);
+  const [notificacoes, setNotificacoes] = useState([]);
+  const [lidas, setLidas] = useState(() => lerIdsLidos());
+  const [notifCarregando, setNotifCarregando] = useState(true);
+  const [notifErro, setNotifErro] = useState(false);
+
+  const carregarNotificacoes = useCallback(async () => {
+    setNotifCarregando(true);
+    setNotifErro(false);
+    try {
+      setNotificacoes(await listarNotificacoes());
+    } catch {
+      setNotifErro(true);
+    } finally {
+      setNotifCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregarNotificacoes();
+  }, [carregarNotificacoes]);
+
+  function marcarLida(id) {
+    setLidas((atual) => {
+      const novo = new Set(atual).add(id);
+      salvarIdsLidos(novo);
+      return novo;
+    });
+  }
+
+  function marcarTodasLidas() {
+    const novo = new Set([...lidas, ...notificacoes.map((n) => n.id)]);
+    salvarIdsLidos(novo);
+    setLidas(novo);
+  }
+
+  function abrirNotificacoes() {
+    setNotifAberto(true);
+    carregarNotificacoes(); // atualiza a lista sempre que o modal abre
+  }
+
+  const naoLidas = notificacoes.filter((n) => !lidas.has(n.id)).length;
 
   // fecha o menu ao clicar fora dele
   useEffect(() => {
@@ -24,7 +69,7 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
 
   return (
     <header className="navbar" role="banner">
-      <Link to="/perfil" className="navbar-logo-link" aria-label="Swappify Página Inicial">
+      <Link to="/feed" className="navbar-logo-link" aria-label="Swappify Página Inicial">
         <img src={logo} alt="Logo Swappify" className="navbar-logo-img" />
         <span className="navbar-logo-text">Swappify</span>
       </Link>
@@ -121,9 +166,10 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
         {/* icone de notificacoes */}
         <button
           type="button"
-          className="navbar-icon-btn"
-          aria-label="Notificações"
+          className="navbar-icon-btn navbar-notif-btn"
+          aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
           title="Notificações"
+          onClick={abrirNotificacoes}
         >
           <svg
             width="22"
@@ -139,6 +185,11 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
+          {naoLidas > 0 && (
+            <span className="navbar-notif-badge" aria-hidden="true">
+              {naoLidas > 9 ? '9+' : naoLidas}
+            </span>
+          )}
         </button>
 
         <div className="navbar-divider" aria-hidden="true" />
@@ -209,6 +260,18 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
           )}
         </div>
       </div>
+
+      <NotificacoesModal
+        isOpen={notifAberto}
+        onClose={() => setNotifAberto(false)}
+        notificacoes={notificacoes}
+        lidas={lidas}
+        carregando={notifCarregando && notificacoes.length === 0}
+        erro={notifErro}
+        onMarcarLida={marcarLida}
+        onMarcarTodasLidas={marcarTodasLidas}
+        onTentarNovamente={carregarNotificacoes}
+      />
     </header>
   );
 }

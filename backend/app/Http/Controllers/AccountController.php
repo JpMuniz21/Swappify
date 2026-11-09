@@ -3,6 +3,7 @@
 namespace App\Http\Controllers; // Localiza esta classe no conjunto de controllers da aplicação.
 
 use App\Models\User; // Representa a tabela users; a conexão vem do .env.
+use App\Models\Localizacao;
 use Illuminate\Http\JsonResponse; // Define respostas com corpo JSON.
 use Illuminate\Http\Request; // Dá acesso aos dados enviados e à sessão.
 use Illuminate\Support\Facades\Auth; // Usa a autenticação por sessão do Laravel.
@@ -35,7 +36,7 @@ class AccountController extends Controller
         Auth::guard('web')->login($user); // Associa a nova conta à sessão do navegador.
         $request->session()->regenerate(); // Troca o identificador e o token CSRF após autenticar.
 
-        return response()->json(['data' => $user], 201); // 201 significa criado; a senha fica oculta pelo model.
+        return response()->json(['data' => $user->load('localizacao')], 201); // 201 significa criado; a senha fica oculta pelo model.
     }
 
     // Login é necessário para consultar/alterar a própria conta em acessos posteriores.
@@ -53,13 +54,13 @@ class AccountController extends Controller
         }
         $request->session()->regenerate(); // Evita reutilizar a sessão anterior ao login.
 
-        return response()->json(['data' => $request->user('web')]); // Retorna o perfil autenticado.
+        return response()->json(['data' => $request->user('web')->load('localizacao')]); // Retorna o perfil autenticado.
     }
 
     // READ: o usuário vem da sessão, nunca de um ID escolhido pelo frontend.
     public function show(Request $request): JsonResponse
     {
-        return response()->json(['data' => $request->user('web')]); // Retorna somente a própria conta.
+        return response()->json(['data' => $request->user('web')->load(['localizacao', 'servicos.categoria', 'servicosProcurados'])]); // Retorna a própria conta, o que oferece e o que procura.
     }
 
     // UPDATE: permite mudanças parciais; campos ausentes são preservados.
@@ -72,19 +73,34 @@ class AccountController extends Controller
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id)], // Aceita o e-mail atual, mas não o de outra pessoa.
             'password' => ['sometimes', 'required', 'confirmed', Password::min(8)], // Nova senha opcional.
+            'profession' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'bio' => ['sometimes', 'nullable', 'string', 'max:240'],
+            'localizacao' => ['sometimes', 'nullable', 'array'],
+            'localizacao.cidade' => ['required_with:localizacao', 'string', 'max:50'],
+            'localizacao.estado' => ['required_with:localizacao', 'string', 'max:50'],
+            'localizacao.bairro' => ['required_with:localizacao', 'string', 'max:50'],
+            'localizacao.cep' => ['nullable', 'string', 'size:8'],
+            'location_id' => ['prohibited'], // Localização é criada/vinculada pelo servidor.
             'current_password' => ['required_with:email,password', 'current_password:web'], // Confirma a senha atual para alterações sensíveis.
         ]);
         unset($data['current_password']); // A confirmação serve só para validar; nunca é salva.
+        $localizacao = $data['localizacao'] ?? null;
+        $localizacaoFoiEnviada = array_key_exists('localizacao', $data);
+        unset($data['localizacao']);
         $user->fill($data); // Aplica apenas os campos permitidos pelo model.
         if ($user->isDirty('email')) { // Detecta uma alteração real no endereço de e-mail.
             $user->email_verified_at = null; // Uma eventual verificação anterior não vale para o novo endereço.
         }
         $user->save(); // Persiste as alterações na conexão de banco configurada.
+        if ($localizacaoFoiEnviada) {
+            $user->location_id = $localizacao === null ? null : $this->salvarLocalizacao($localizacao)->id;
+            $user->save();
+        }
         if (array_key_exists('password', $data)) { // Uma troca de senha também renova esta sessão.
             $request->session()->regenerate(); // auth.session invalida as outras sessões ao acessarem novamente.
         }
 
-        return response()->json(['data' => $user]); // Entrega ao frontend o perfil atualizado.
+        return response()->json(['data' => $user->fresh()->load('localizacao')]); // Entrega ao frontend o perfil atualizado.
     }
 
     // DELETE: exclui definitivamente a própria conta após conferir a senha.
@@ -114,6 +130,17 @@ class AccountController extends Controller
         if (is_string($request->input('email'))) { // Deixa valores inválidos para a validação rejeitar.
             $request->merge(['email' => mb_strtolower(trim($request->input('email')))]); // Remove espaços e converte para minúsculas.
         }
+    }
+
+    private function salvarLocalizacao(array $dados): Localizacao
+    {
+        // Reaproveita a mesma localização quando os quatro campos coincidem.
+        return Localizacao::firstOrCreate([
+            'cidade' => $dados['cidade'],
+            'estado' => $dados['estado'],
+            'bairro' => $dados['bairro'],
+            'cep' => $dados['cep'] ?? null,
+        ]);
     }
 
     // Compartilhado pelo logout e pela exclusão.

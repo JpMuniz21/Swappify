@@ -1,0 +1,36 @@
+# Imagem de PRODUÇÃO do backend (Render).
+# Para desenvolvimento continue usando o Dockerfile + docker-compose.yml.
+FROM php:8.3-apache-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpq-dev libzip-dev libonig-dev unzip \
+    && docker-php-ext-install pdo_pgsql mbstring zip opcache \
+    && a2enmod rewrite headers \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-producao.ini
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+# O Render informa a porta em $PORT (padrão 10000); o Apache lê ${PORT} da variável de ambiente.
+RUN sed -i 's/^Listen 80$/Listen ${PORT}/' /etc/apache2/ports.conf
+
+WORKDIR /var/www/html
+
+# Dependências primeiro para aproveitar o cache do Docker.
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
+
+COPY . .
+RUN composer dump-autoload --optimize --no-dev \
+    && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+ENV PORT=10000 \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr
+
+EXPOSE 10000
+CMD ["sh", "/var/www/html/docker/entrypoint.prod.sh"]

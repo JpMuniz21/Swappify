@@ -84,6 +84,38 @@ class AccountTest extends TestCase
         $this->patchJson('/api/users/'.$other->id, ['name' => 'Intruso'])->assertNotFound();
     }
 
+    public function test_profile_can_update_profession_bio_and_structured_location(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patchJson('/api/me', [
+            'profession' => 'Fotógrafa',
+            'bio' => 'Registro momentos especiais.',
+            'localizacao' => [
+                'cidade' => 'Fortaleza',
+                'estado' => 'CE',
+                'bairro' => 'Aldeota',
+                'cep' => '60150161',
+            ],
+        ])->assertOk()
+            ->assertJsonPath('data.profession', 'Fotógrafa')
+            ->assertJsonPath('data.bio', 'Registro momentos especiais.')
+            ->assertJsonPath('data.localizacao.cidade', 'Fortaleza')
+            ->assertJsonPath('data.localizacao.estado', 'CE');
+
+        $this->assertDatabaseHas('localizacoes', ['cidade' => 'Fortaleza', 'estado' => 'CE', 'bairro' => 'Aldeota']);
+        $this->assertNotNull($user->fresh()->location_id);
+    }
+
+    public function test_profile_rejects_incomplete_location_and_external_location_id(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->patchJson('/api/me', [
+            'localizacao' => ['cidade' => 'Fortaleza'],
+            'location_id' => 999,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['localizacao.estado', 'localizacao.bairro', 'location_id']);
+    }
+
     public function test_email_change_requires_password_and_resets_verification(): void
     {
         $user = User::factory()->create();

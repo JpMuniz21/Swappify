@@ -204,6 +204,25 @@ await api('/api/me', 'DELETE', { current_password: 'Senha12345' });
 No Postman/Insomnia, preserve os cookies, faça GET /api/csrf-token e copie csrf_token
 para X-CSRF-TOKEN antes de POST/PATCH/DELETE. Atualize o token após mudanças de sessão.
 
+## Perfil completo
+
+`PATCH /api/me` também aceita `profession`, `bio` e uma localização estruturada. A
+localização precisa ter cidade, estado e bairro; `cep` é opcional. O cliente não envia
+`location_id`, pois a API encontra ou cria a localização e vincula à conta.
+
+```json
+{
+  "profession": "Fotógrafa",
+  "bio": "Registro momentos especiais.",
+  "localizacao": {
+    "cidade": "Fortaleza",
+    "estado": "CE",
+    "bairro": "Aldeota",
+    "cep": "60150161"
+  }
+}
+```
+
 O fluxo atual considera frontend e API no mesmo site, como localhost em portas
 diferentes. Use localhost nos dois, sem misturar com 127.0.0.1.
 Em produção, planeje domínios do mesmo site e HTTPS, configure SESSION_SECURE_COOKIE=true

@@ -308,12 +308,14 @@ export default function ServiceSelectModal({
                 type="text"
                 required
                 placeholder="Nome do serviço (ex: Aulas de Violão)"
+                maxLength={50}
                 value={novoTitulo}
                 onChange={(e) => setNovoTitulo(e.target.value)}
               />
               <input
                 type="text"
                 placeholder="Breve descrição do que você oferece ou procura"
+                maxLength={150}
                 value={novaDescricao}
                 onChange={(e) => setNovaDescricao(e.target.value)}
               />

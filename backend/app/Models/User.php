@@ -43,8 +43,38 @@ class User extends Authenticatable
         return $this->belongsTo(Localizacao::class, 'location_id');
     }
 
+    public function servicosProcurados(): HasMany
+    {
+        return $this->hasMany(ServicoProcurado::class, 'usuario_id')->orderBy('id'); // ordem em que foram adicionados
+    }
+
     public function servicos(): HasMany
     {
         return $this->hasMany(Servico::class, 'usuario_id');
+    }
+
+    public function postagens(): HasMany
+    {
+        return $this->hasMany(Postagem::class, 'usuario_id');
+    }
+
+    public function interesses(): HasMany
+    {
+        return $this->hasMany(Interesse::class, 'usuario_id');
+    }
+
+    public function matchesIniciados(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'usuario_1_id');
+    }
+
+    public function matchesRecebidos(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'usuario_2_id');
+    }
+
+    public function mensagensEnviadas(): HasMany
+    {
+        return $this->hasMany(Mensagem::class, 'remetente_id');
     }
 }

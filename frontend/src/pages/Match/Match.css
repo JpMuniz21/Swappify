@@ -158,3 +158,23 @@
     align-items: flex-start;
   }
 }
+
+/* contador em texto quando ha muitos perfis */
+.match-contador-texto {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b35a8;
+  text-align: center;
+}
+
+/* aviso de erro ao curtir */
+.match-aviso {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #a12c2c;
+  font-size: 0.85rem;
+  text-align: center;
+}
