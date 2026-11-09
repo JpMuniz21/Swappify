@@ -9,7 +9,7 @@ import Configuracoes from './pages/Configuracoes/Configuracoes';
 import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
 import Favoritos from './pages/Favoritos/Favoritos';
 import Match from './pages/Match/Match';
-import EmDesenvolvimento from './pages/EmDesenvolvimento/EmDesenvolvimento';
+import MinhasTrocas from './pages/MinhasTrocas';
 import Agendamentos from './pages/Agendamentos/Agendamentos';
 
 export default function App() {
@@ -30,18 +30,9 @@ export default function App() {
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/favoritos" element={<Favoritos />} />
           <Route path="/match" element={<Match />} />
-
-          {/* Telas em construção por outros responsáveis da sprint */}
-          <Route
-            path="/minhas-trocas"
-            element={
-              <EmDesenvolvimento
-                titulo="Minhas Trocas"
-                descricao="Aqui você vai acompanhar as trocas de serviço que combinou com outras pessoas."
-              />
-            }
-          />
           <Route path="/agendamentos" element={<Agendamentos />} />
+          
+          <Route path="/minhas-trocas" element={<MinhasTrocas />} />
           
         </Route>
 

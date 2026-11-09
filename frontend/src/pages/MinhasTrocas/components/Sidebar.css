@@ -1,0 +1,163 @@
+/* Sidebar de Minhas Trocas - compatível com o Feed */
+
+.trocas-sidebar {
+  background: #ffffff;
+  padding: 24px 20px 32px;
+  width: 250px;
+  min-width: 250px;
+  border-right: 1px solid #ebe6f2;
+  display: flex;
+  flex-direction: column;
+}
+
+.trocas-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--roxo-escuro, #3f2650);
+  padding: 6px 8px;
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.trocas-sidebar-profile:hover {
+  background: #f7f3fb;
+}
+
+.trocas-sidebar-avatar {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #e5daf0;
+  flex-shrink: 0;
+}
+
+.trocas-sidebar-profile-text strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c2336;
+}
+
+.trocas-sidebar-profile-text small {
+  display: block;
+  margin-top: 2px;
+  color: #757078;
+  font-size: 0.72rem;
+}
+
+.trocas-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 28px 0 36px;
+}
+
+.trocas-sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #4b4255;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+  font-weight: 500;
+}
+
+.trocas-sidebar-menu a svg {
+  color: #796e85;
+  transition: color 0.18s ease;
+  flex-shrink: 0;
+}
+
+.trocas-sidebar-menu a:hover {
+  background: #f5effc;
+  color: #6b35a8;
+}
+
+.trocas-sidebar-menu a:hover svg {
+  color: #6b35a8;
+}
+
+.trocas-sidebar-menu a.trocas-sidebar-link--ativo {
+  background: linear-gradient(135deg, #6b35a8, #5a2b8e);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(107, 53, 168, 0.25);
+}
+
+.trocas-sidebar-menu a.trocas-sidebar-link--ativo svg {
+  color: #ffffff;
+}
+
+.trocas-sidebar-ad {
+  margin-top: auto;
+  border-radius: 12px;
+  background: #eee5ef;
+  overflow: hidden;
+  color: var(--roxo-escuro, #3f2650);
+}
+
+.trocas-sidebar-ad > strong {
+  display: block;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.trocas-sidebar-ad-art {
+  min-height: 120px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: radial-gradient(circle at 90% 10%, #faf2da, transparent 60%), linear-gradient(135deg, #efe8f6, #b995cf);
+}
+
+.trocas-sidebar-ad-art img {
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 900px) {
+  .trocas-sidebar {
+    width: 210px;
+    min-width: 210px;
+    padding: 18px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trocas-sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ebe6f2;
+    padding: 12px 16px;
+  }
+
+  .trocas-sidebar-ad {
+    display: none;
+  }
+
+  .trocas-sidebar-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    margin: 12px 0 0;
+    padding-bottom: 6px;
+    gap: 8px;
+  }
+
+  .trocas-sidebar-menu a {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+

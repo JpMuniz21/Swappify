@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/logo-swappify.svg';
-import defaultAvatar from '../../assets/lucas-avatar.jpg';
+import defaultAvatar from '../../assets/avatar-padrao.svg';
 import NotificacoesModal from '../NotificacoesModal/NotificacoesModal';
 import { listarNotificacoes, lerIdsLidos, salvarIdsLidos } from '../../services/notificacaoService';
 import './Navbar.css';
@@ -64,7 +64,7 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
-  const primeiroNome = usuario?.name ? usuario.name.trim().split(' ')[0] : 'Lucas';
+ const primeiroNome = usuario?.name ? usuario.name.trim().split(' ')[0] : 'Perfil';
   const avatarUrl = usuario?.avatar_url || defaultAvatar;
 
   return (

@@ -3,7 +3,7 @@ import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import { logout } from '../../services/authService';
 import { listarPostagens, criarPostagem } from '../../services/postagemService';
-import avatarPadrao from '../../assets/lucas-avatar.jpg';
+import avatarPadrao from '../../assets/avatar-padrao.svg';
 import logo from '../../assets/logo-swappify.svg';
 import './Feed.css';
 
