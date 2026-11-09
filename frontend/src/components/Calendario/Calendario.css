@@ -1,0 +1,148 @@
+.cal {
+    padding: 20px 24px 16px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(63, 38, 80, 0.08);
+}
+
+.cal-topo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cal-titulo {
+    flex: 1;
+    margin: 0;
+    font: 500 1.2rem 'Jost', sans-serif;
+    text-align: center;
+    color: var(--roxo-escuro, #3f2650);
+}
+
+.cal-titulo::first-letter {
+    text-transform: uppercase;
+}
+
+.cal-seta,
+.cal-hoje {
+    border: 1px solid #e3d9ec;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--roxo-escuro, #3f2650);
+    cursor: pointer;
+}
+
+.cal-seta {
+    width: 34px;
+    height: 34px;
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.cal-hoje {
+    padding: 7px 14px;
+    font: 500 0.8rem 'Montserrat', sans-serif;
+}
+
+.cal-seta:hover,
+.cal-hoje:hover {
+    background: #f4eef9;
+}
+
+.cal-grade {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.cal-semana {
+    padding-bottom: 6px;
+    font: 500 0.7rem 'Montserrat', sans-serif;
+    text-align: center;
+    text-transform: uppercase;
+    color: #7d7189;
+}
+
+.cal-dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    aspect-ratio: 1;
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: #faf7fd;
+    color: var(--roxo-escuro, #3f2650);
+    font: 500 0.9rem 'Montserrat', sans-serif;
+    cursor: pointer;
+}
+
+.cal-dia:hover {
+    background: #f0e8f8;
+}
+
+.cal-dia--hoje {
+    border-color: #8e4fc4;
+}
+
+.cal-dia--selecionado,
+.cal-dia--selecionado:hover {
+    background: #55376a;
+    color: #fff;
+}
+
+.cal-marcas {
+    display: flex;
+    gap: 3px;
+    height: 6px;
+}
+
+.cal-marcas i,
+.cal-legenda i {
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.cal-dia--selecionado .cal-marcas i {
+    box-shadow: 0 0 0 1.5px #fff;
+}
+
+.cal-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 16px 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid #eee6f4;
+    list-style: none;
+    font-size: 0.72rem;
+    color: #6e6479;
+}
+
+.cal-legenda li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cal-dia:focus-visible,
+.cal-seta:focus-visible,
+.cal-hoje:focus-visible {
+    outline: 3px solid #b884d6;
+    outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+    .cal {
+        padding: 16px 12px 12px;
+    }
+
+    .cal-grade {
+        gap: 4px;
+    }
+}

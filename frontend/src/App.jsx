@@ -10,6 +10,7 @@ import RecuperarSenha from './pages/RecuperarSenha/RecuperarSenha';
 import Favoritos from './pages/Favoritos/Favoritos';
 import Match from './pages/Match/Match';
 import EmDesenvolvimento from './pages/EmDesenvolvimento/EmDesenvolvimento';
+import Agendamentos from './pages/Agendamentos/Agendamentos';
 
 export default function App() {
   return (
@@ -40,15 +41,8 @@ export default function App() {
               />
             }
           />
-          <Route
-            path="/agendamentos"
-            element={
-              <EmDesenvolvimento
-                titulo="Agendamentos"
-                descricao="Aqui você vai organizar datas e horários das suas trocas."
-              />
-            }
-          />
+          <Route path="/agendamentos" element={<Agendamentos />} />
+          
         </Route>
 
         <Route path="*" element={<Navigate to="/feed" replace />} />
