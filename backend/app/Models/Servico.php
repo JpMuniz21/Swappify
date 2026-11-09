@@ -36,4 +36,14 @@ class Servico extends Model
     {
         return $this->hasMany(Interesse::class, 'servico_id');
     }
+
+    public function matchesComoServico1(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'servico_1_id');
+    }
+
+    public function matchesComoServico2(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'servico_2_id');
+    }
 }

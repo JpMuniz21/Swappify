@@ -1,138 +1,100 @@
 <?php
 
-// Salve em: backend/app/Http/Controllers/ChatController.php
-
 namespace App\Http\Controllers;
 
+use App\Models\Mensagem;
+use App\Models\Troca;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
-// Usa a MESMA conexão de banco do resto do projeto (DB_* do backend/.env).
-//
-// ATENÇÃO: o login do Laravel usa a tabela "users", mas as tabelas do chat
-// (match e mensagem) apontam para a tabela "usuario". Por enquanto, ligamos as
-// duas pelo E-MAIL: a pessoa logada precisa existir nas duas tabelas com o mesmo e-mail.
 class ChatController extends Controller
 {
-    // id_usuario (tabela "usuario") de quem está logado, achado pelo e-mail
-    private function meuIdUsuario(Request $request): ?int
-    {
-        $email = mb_strtolower($request->user()->email);
-
-        $id = DB::table('usuario')->whereRaw('lower(email) = ?', [$email])->value('id_usuario');
-
-        return $id === null ? null : (int) $id;
-    }
-
-    private function semCadastro(): JsonResponse
-    {
-        return response()->json(
-            ['message' => 'Seu e-mail não foi encontrado na tabela "usuario" do banco.'],
-            404
-        );
-    }
-
-    private function souDoMatch(int $eu): \Closure
-    {
-        return fn ($q) => $q->where('id_usuario_1', $eu)->orWhere('id_usuario_2', $eu);
-    }
-
-    // Este usuário participa deste match?
-    private function participa(int $eu, string $idMatch): bool
-    {
-        return DB::table('match')
-            ->where('id_match', $idMatch)
-            ->where($this->souDoMatch($eu))
-            ->exists();
-    }
-
-    // GET /api/conversas
+    // GET /api/conversas: retorna somente matches ativos da pessoa logada.
     public function conversas(Request $request): JsonResponse
     {
-        $eu = $this->meuIdUsuario($request);
-        if ($eu === null) {
-            return $this->semCadastro();
-        }
+        $meuId = $request->user()->id;
+        $matches = Troca::with(['usuario1', 'usuario2'])
+            ->where('status', 'ativo')
+            ->where(fn ($query) => $query->where('usuario_1_id', $meuId)->orWhere('usuario_2_id', $meuId))
+            ->orderByDesc('data_match')
+            ->get();
 
-        $matches = DB::table('match')
-            ->where($this->souDoMatch($eu))
-            ->get(['id_match', 'id_usuario_1', 'id_usuario_2']);
+        return response()->json($matches->map(function (Troca $match) use ($meuId): array {
+            $outro = $match->usuario_1_id === $meuId ? $match->usuario2 : $match->usuario1;
 
-        $idOutro = fn ($m) => $m->id_usuario_1 == $eu ? $m->id_usuario_2 : $m->id_usuario_1;
-
-        $nomes = DB::table('usuario')
-            ->whereIn('id_usuario', $matches->map($idOutro)->unique()->values())
-            ->pluck('nome', 'id_usuario');
-
-        return response()->json(
-            $matches->map(fn ($m) => [
-                'id_match' => $m->id_match,
+            return [
+                'id_match' => $match->id,
                 'outro' => [
-                    'id' => $idOutro($m),
-                    'nome' => $nomes[$idOutro($m)] ?? 'Usuário',
-                    'avatar_url' => null, // a tabela usuario ainda não tem coluna de foto
+                    'id' => $outro->id,
+                    'nome' => $outro->name,
+                    'avatar_url' => null,
                 ],
-            ])->values()
-        );
+            ];
+        })->values());
     }
 
     // GET /api/conversas/{idMatch}/mensagens
     public function mensagens(Request $request, string $idMatch): JsonResponse
     {
-        $eu = $this->meuIdUsuario($request);
-        if ($eu === null) {
-            return $this->semCadastro();
-        }
-        if (! $this->participa($eu, $idMatch)) {
+        $match = $this->matchDoUsuario($request, $idMatch);
+        if ($match === null) {
             return response()->json(['message' => 'Conversa não encontrada.'], 404);
         }
 
-        // marca como lidas as mensagens enviadas pela outra pessoa
-        DB::table('mensagem')
-            ->where('id_match', $idMatch)
-            ->where('id_remetente', '!=', $eu)
+        Mensagem::where('match_id', $match->id)
+            ->where('remetente_id', '!=', $request->user()->id)
             ->where('lida', false)
             ->update(['lida' => true]);
 
-        $lista = DB::table('mensagem')
-            ->where('id_match', $idMatch)
-            ->orderBy('data_envio')
-            ->orderBy('id_mensagem')
-            ->get(['id_mensagem', 'id_match', 'id_remetente', 'conteudo', 'data_envio', 'lida'])
-            ->map(fn ($m) => [...(array) $m, 'minha' => $m->id_remetente == $eu]);
-
-        return response()->json($lista->values());
+        return response()->json(
+            Mensagem::where('match_id', $match->id)
+                ->orderBy('data_envio')
+                ->orderBy('id')
+                ->get()
+                ->map(fn (Mensagem $mensagem) => $this->mensagemParaApi($mensagem, $request->user()->id))
+                ->values()
+        );
     }
 
-    // POST /api/conversas/{idMatch}/mensagens   corpo: { "conteudo": "..." }
+    // POST /api/conversas/{idMatch}/mensagens
     public function enviar(Request $request, string $idMatch): JsonResponse
     {
-        $eu = $this->meuIdUsuario($request);
-        if ($eu === null) {
-            return $this->semCadastro();
-        }
-
-        $dados = $request->validate([
-            'conteudo' => ['required', 'string', 'max:2000'],
-        ]);
-
-        if (! $this->participa($eu, $idMatch)) {
+        $match = $this->matchDoUsuario($request, $idMatch);
+        if ($match === null) {
             return response()->json(['message' => 'Conversa não encontrada.'], 404);
         }
 
-        $id = DB::table('mensagem')->insertGetId([
-            'id_match' => $idMatch,
-            'id_remetente' => $eu,
+        $dados = $request->validate(['conteudo' => ['required', 'string', 'max:2000']]);
+        $mensagem = $match->mensagens()->create([
+            'remetente_id' => $request->user()->id,
             'conteudo' => $dados['conteudo'],
-            'data_envio' => now(),
             'lida' => false,
-        ], 'id_mensagem');
+            'data_envio' => now(),
+        ]);
 
-        $nova = DB::table('mensagem')
-            ->where('id_mensagem', $id)
-            ->first(['id_mensagem', 'id_match', 'id_remetente', 'conteudo', 'data_envio', 'lida']);
+        return response()->json($this->mensagemParaApi($mensagem, $request->user()->id), 201);
+    }
 
-        return response()->json([...(array) $nova, 'minha' => true], 201);
+    private function matchDoUsuario(Request $request, string $idMatch): ?Troca
+    {
+        return Troca::whereKey($idMatch)
+            ->where('status', 'ativo')
+            ->where(fn ($query) => $query
+                ->where('usuario_1_id', $request->user()->id)
+                ->orWhere('usuario_2_id', $request->user()->id))
+            ->first();
+    }
+
+    private function mensagemParaApi(Mensagem $mensagem, int $meuId): array
+    {
+        return [
+            'id_mensagem' => $mensagem->id,
+            'id_match' => $mensagem->match_id,
+            'id_remetente' => $mensagem->remetente_id,
+            'conteudo' => $mensagem->conteudo,
+            'data_envio' => $mensagem->data_envio,
+            'lida' => $mensagem->lida,
+            'minha' => $mensagem->remetente_id === $meuId,
+        ];
     }
 }
