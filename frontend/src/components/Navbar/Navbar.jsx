@@ -24,7 +24,7 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
 
   return (
     <header className="navbar" role="banner">
-      <Link to="/perfil" className="navbar-logo-link" aria-label="Swappify Página Inicial">
+      <Link to="/feed" className="navbar-logo-link" aria-label="Swappify Página Inicial">
         <img src={logo} alt="Logo Swappify" className="navbar-logo-img" />
         <span className="navbar-logo-text">Swappify</span>
       </Link>
