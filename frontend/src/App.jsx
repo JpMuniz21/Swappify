@@ -32,15 +32,7 @@ export default function App() {
           <Route path="/match" element={<Match />} />
 
           {/* Telas em construção por outros responsáveis da sprint */}
-          <Route
-            path="/minhas-trocas"
-            element={
-              <EmDesenvolvimento
-                titulo="Minhas Trocas"
-                descricao="Aqui você vai acompanhar as trocas de serviço que combinou com outras pessoas."
-              />
-            }
-          />
+          <Route path="/minhas-trocas" element={<MinhasTrocas />} />
           <Route
             path="/agendamentos"
             element={
