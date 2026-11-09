@@ -1,11 +1,6 @@
-import lucasAvatar from '../../../assets/lucas-avatar.jpg';
+import defaultAvatar from '../../../assets/avatar-padrao.svg';
 import './TrocaCard.css';
 
-/**
- * Subcomponente de Card Horizontal de Troca.
- * Exibe os dois lados da troca (Você com lucas-avatar.jpg e o Parceiro),
- * o resumo do acordo combinado, badge de status e ações dinâmicas.
- */
 export default function TrocaCard({
   troca,
   onConversar,
@@ -16,22 +11,18 @@ export default function TrocaCard({
   onAvaliar,
 }) {
   const {
-    id,
-    status,
-    statusLabel,
-    badgeVariant,
-    voce,
-    parceiro,
-    acordo,
-    dataInicio,
-    prazo,
-    dataConclusao,
-  } = troca;
+  status,
+  statusLabel,
+  voce,
+  parceiro,
+  acordo,
+  dataInicio,
+  prazo,
+  dataConclusao,
+} = troca;
 
-  // Garante obrigatoriamente a foto lucas-avatar.jpg para o usuário logado ("Você")
-  const avatarVoce = voce?.avatar || lucasAvatar;
+  const avatarVoce = voce?.avatar || defaultAvatar;
 
-  // Badge de status correspondente
   function renderBadge() {
     switch (status) {
       case 'em_andamento':
@@ -84,7 +75,6 @@ export default function TrocaCard({
     }
   }
 
-  // Renderiza botões de ação dinâmicos conforme a regra de status
   function renderAcoes() {
     if (status === 'em_andamento') {
       return (
@@ -224,7 +214,6 @@ export default function TrocaCard({
       );
     }
 
-    // Cancelada ou outro status
     return (
       <div className="troca-card-acoes">
         <button
@@ -268,7 +257,7 @@ export default function TrocaCard({
 
       {/* Seção Central Horizontal: Você <-> Conector <-> Parceiro */}
       <div className="troca-card-negociacao">
-        {/* Lado Esquerdo: Você com foto lucas-avatar.jpg */}
+        {/* Lado Esquerdo: Você*/}
         <div className="troca-lado troca-lado--voce">
           <div className="troca-avatar-container">
             <img
@@ -311,7 +300,7 @@ export default function TrocaCard({
           <div className="troca-conector-linha" />
         </div>
 
-        {/* Lado Direito: Parceiro com Avatar, Nome, Nota ⭐ e Tag */}
+        {/* Lado Direito: Parceiro com Avatar, Nome, Nota e Tag */}
         <div className="troca-lado troca-lado--parceiro">
           <div className="troca-avatar-container">
             {parceiro?.avatar ? (

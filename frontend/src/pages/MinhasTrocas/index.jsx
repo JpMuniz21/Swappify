@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Sidebar from './components/Sidebar';
 import TrocasMetricas from './components/TrocasMetricas';
@@ -8,34 +8,50 @@ import TrocaCard from './components/TrocaCard';
 import TrocasEmpty from './components/TrocasEmpty';
 import TrocaModal from './components/TrocaModal';
 import { METRICAS_MOCK, TROCAS_MOCK } from './trocasMock';
-import lucasAvatar from '../../assets/lucas-avatar.jpg';
+import avatarPadrao from '../../assets/avatar-padrao.svg';
 import './MinhasTrocas.css';
 
 export default function MinhasTrocas() {
   const navigate = useNavigate();
 
-  // Dados do usuário logado garantindo foto oficial lucas-avatar.jpg
+  // Usuário logado, vindo do RotaProtegida (mesmo padrão do Feed).
+
+  const { usuario } = useOutletContext() ?? {};
   const usuarioLogado = useMemo(
     () => ({
-      name: 'Lucas Vasconcelo',
-      avatar_url: lucasAvatar,
+      ...usuario,
+      name: usuario?.name ?? 'Meu perfil',
+      avatar_url: usuario?.avatar_url || avatarPadrao,
     }),
-    []
+    [usuario]
   );
 
-  // Estados principais da página
   const [metricas, setMetricas] = useState(METRICAS_MOCK);
   const [trocas, setTrocas] = useState(TROCAS_MOCK);
   const [filtro, setFiltro] = useState('todas');
   const [busca, setBusca] = useState('');
-  const [ordenacao, setOrdenacao] = useState('recentes'); // 'recentes' | 'antigas' | 'nome'
+  const [ordenacao, setOrdenacao] = useState('recentes');
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [aviso, setAviso] = useState('');
-  const [modalAtivo, setModalAtivo] = useState(null); // { tipo, troca }
+  const [modalAtivo, setModalAtivo] = useState(null);
 
   const dropdownRef = useRef(null);
 
-  // Fecha dropdown de ordenação ao clicar fora
+
+  const primeiroNome = usuario?.name?.split(' ')[0] ?? '';
+  const trocasComUsuario = useMemo(
+    () =>
+      trocas.map((t) => ({
+        ...t,
+        voce: {
+          ...t.voce,
+          nome: primeiroNome ? `Você (${primeiroNome})` : 'Você',
+          avatar: usuarioLogado.avatar_url,
+        },
+      })),
+    [trocas, primeiroNome, usuarioLogado.avatar_url]
+  );
+
   useEffect(() => {
     function handleClickFora(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -46,7 +62,6 @@ export default function MinhasTrocas() {
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
-  // Contadores dinâmicos para as abas de filtro
   const contadores = useMemo(() => {
     return {
       todas: trocas.length,
@@ -57,18 +72,15 @@ export default function MinhasTrocas() {
     };
   }, [trocas]);
 
-  // Filtro e Busca com ordenação
   const trocasFiltradas = useMemo(() => {
     const termo = busca.toLowerCase().trim();
 
-    const resultado = trocas.filter((troca) => {
-      // 1. Filtro por status
+    const resultado = trocasComUsuario.filter((troca) => {
       if (filtro === 'em_andamento' && troca.status !== 'em_andamento') return false;
       if (filtro === 'solicitacoes' && troca.status !== 'aguardando_voce') return false;
       if (filtro === 'concluidas' && troca.status !== 'concluida') return false;
       if (filtro === 'canceladas' && troca.status !== 'cancelada') return false;
 
-      // 2. Busca textual
       if (!termo) return true;
 
       const nomeParceiro = (troca.parceiro?.nome || '').toLowerCase();
@@ -86,7 +98,6 @@ export default function MinhasTrocas() {
       );
     });
 
-    // 3. Ordenação
     if (ordenacao === 'nome') {
       resultado.sort((a, b) =>
         (a.parceiro?.nome || '').localeCompare(b.parceiro?.nome || '')
@@ -96,19 +107,17 @@ export default function MinhasTrocas() {
     }
 
     return resultado;
-  }, [trocas, filtro, busca, ordenacao]);
+  }, [trocasComUsuario, filtro, busca, ordenacao]);
 
-  // Ação 1: Redirecionamento para o Chat
+
   function handleConversar() {
     navigate('/chat');
   }
 
-  // Ação 2: Abertura de Modal (Ver Detalhes, Proposta ou Histórico)
   function handleVerDetalhes(troca, tipo = 'detalhes') {
     setModalAtivo({ tipo, troca });
   }
 
-  // Ação 3: Marcar como Concluída
   function handleConcluir(trocaAlvo) {
     setTrocas((prev) =>
       prev.map((t) =>
@@ -133,7 +142,6 @@ export default function MinhasTrocas() {
     setAviso(`A troca com ${trocaAlvo.parceiro?.nome} foi marcada como concluída!`);
   }
 
-  // Ação 4: Aceitar Proposta
   function handleAceitar(trocaAlvo) {
     setTrocas((prev) =>
       prev.map((t) =>
@@ -157,7 +165,6 @@ export default function MinhasTrocas() {
     setAviso(`Proposta de ${trocaAlvo.parceiro?.nome} aceita com sucesso! Status alterado para Em andamento.`);
   }
 
-  // Ação 5: Recusar Proposta
   function handleRecusar(trocaAlvo) {
     setTrocas((prev) =>
       prev.map((t) =>
@@ -201,7 +208,7 @@ export default function MinhasTrocas() {
       />
 
       <div className="minhas-trocas-layout">
-        {/* 2. Sidebar Lateral com foto lucas-avatar.jpg e navegação */}
+        {/* 2. Sidebar Lateral */}
         <Sidebar usuario={usuarioLogado} />
 
         {/* 3. Conteúdo Principal */}

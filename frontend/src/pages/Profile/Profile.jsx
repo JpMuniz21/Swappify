@@ -7,13 +7,13 @@ import { consultarPerfil, atualizarPerfil, logout } from '../../services/authSer
 import {
   listarCategorias, criarServico, excluirServico, adicionarProcurado, removerProcurado,
 } from '../../services/servicoService';
-import avatarLucas from '../../assets/lucas-avatar.jpg';
+import avatarPadrao from '../../assets/avatar-padrao.svg';
 import fotoPortfolioPet from '../../assets/portfolio-pet.png';
 import './Profile.css';
 
 // dados iniciais do perfil
 const DADOS_INICIAIS_FIGMA = {
-  name: 'Lucas Vasconcelo',
+  name: 'Usuário Exemplo',
   profession: 'Empreendedor',
   location: 'Santa Cantarina',
   bio: '', // texto inicial vazio
@@ -22,7 +22,7 @@ const DADOS_INICIAIS_FIGMA = {
   trocasRealizadas: 0,
   taxaConclusao: '0%',
   isNovo: true,
-  avatar_url: avatarLucas,
+  avatar_url: avatarPadrao,
 };
 
 const DADOS_DISPONIBILIDADE_INICIAL = {
@@ -531,7 +531,7 @@ export default function Profile() {
               <div className="perfil-avatar-wrapper">
                 {usuario.isNovo && <span className="perfil-badge-novo">Novo</span>}
                 <img
-                  src={usuario.avatar_url || avatarLucas}
+                  src={usuario.avatar_url || avatarPadrao}
                   alt={`Foto de ${usuario.name}`}
                   className="perfil-avatar-foto"
                 />

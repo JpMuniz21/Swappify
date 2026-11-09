@@ -1,4 +1,4 @@
-import lucasAvatar from '../../assets/lucas-avatar.jpg';
+
 
 export const METRICAS_MOCK = {
   ativas: 2,
@@ -24,8 +24,7 @@ export const TROCAS_MOCK = [
     prazo: '28 Out 2026',
     progresso: '60%',
     voce: {
-      nome: 'Você (Lucas)',
-      avatar: lucasAvatar,
+      nome: 'Você',
       servico: 'Consulta Veterinária & Vacinação Pet',
       categoria: 'Medicina Veterinária',
     },
@@ -52,8 +51,7 @@ export const TROCAS_MOCK = [
     prazo: '02 Nov 2026',
     progresso: '35%',
     voce: {
-      nome: 'Você (Lucas)',
-      avatar: lucasAvatar,
+      nome: 'Você',
       servico: 'Atendimento Veterinário Domiciliar',
       categoria: 'Clínica Veterinária',
     },
@@ -79,8 +77,7 @@ export const TROCAS_MOCK = [
     dataInicio: 'Hoje às 10:30',
     prazo: 'Validade da proposta: 48 horas',
     voce: {
-      nome: 'Você (Lucas)',
-      avatar: lucasAvatar,
+      nome: 'Você',
       servico: 'Check-up Preventivo e Exames Veterinários',
       categoria: 'Diagnóstico Veterinário',
     },
@@ -106,8 +103,7 @@ export const TROCAS_MOCK = [
     dataInicio: '25 Set 2026',
     dataConclusao: '10 Out 2026',
     voce: {
-      nome: 'Você (Lucas)',
-      avatar: lucasAvatar,
+      nome: 'Você',
       servico: 'Nutrição Clínica e Dieta Veterinária',
       categoria: 'Nutrição Animal',
     },
@@ -123,7 +119,7 @@ export const TROCAS_MOCK = [
     },
     acordo: 'Prescrição de Dieta Veterinária Especializada em troca de Redesign UI/UX no Figma',
     descricaoDetalhada:
-      'Troca finalizada com sucesso! Lucas realizou anamnese nutricional detalhada e prescreveu plano alimentar clínico para dois pets com restrições alimentares de Rafael, e Rafael entregou o fluxo de checkout prototipado e testado no Figma.',
+      'Troca finalizada com sucesso! Você realizou anamnese nutricional detalhada e prescreveu plano alimentar clínico para dois pets com restrições alimentares de Rafael, e Rafael entregou o fluxo de checkout prototipado e testado no Figma.',
   },
   {
     id: 'tr-05',
@@ -133,8 +129,7 @@ export const TROCAS_MOCK = [
     dataInicio: '10 Set 2026',
     dataCancelamento: '12 Set 2026',
     voce: {
-      nome: 'Você (Lucas)',
-      avatar: lucasAvatar,
+      nome: 'Você',
       servico: 'Acompanhamento Pós-Cirúrgico Veterinário',
       categoria: 'Cirurgia e Cuidados Pet',
     },

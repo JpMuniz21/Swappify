@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import avatarPadrao from '../../../assets/lucas-avatar.jpg';
+import avatarPadrao from '../../../assets/avatar-padrao.svg';
 import logo from '../../../assets/logo-swappify.svg';
 import './Sidebar.css';
 
@@ -58,7 +58,7 @@ function IconeMenu({ tipo }) {
 }
 
 export default function Sidebar({ usuario }) {
-  const nomeUsuario = usuario?.name ?? 'Lucas Vasconcelo';
+  const nomeUsuario = usuario?.name ?? 'Meu perfil';
   const avatarUsuario = usuario?.avatar_url || avatarPadrao;
 
   return (
