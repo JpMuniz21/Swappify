@@ -57,4 +57,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Interesse::class, 'usuario_id');
     }
+
+    public function matchesIniciados(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'usuario_1_id');
+    }
+
+    public function matchesRecebidos(): HasMany
+    {
+        return $this->hasMany(Troca::class, 'usuario_2_id');
+    }
+
+    public function mensagensEnviadas(): HasMany
+    {
+        return $this->hasMany(Mensagem::class, 'remetente_id');
+    }
 }

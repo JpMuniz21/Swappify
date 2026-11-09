@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController; // Controller responsável pelo cada
 use App\Http\Controllers\ServicoController;
 use App\Http\Controllers\PostagemController;
 use App\Http\Controllers\InteresseController;
+use App\Http\Controllers\MatchController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController; // Registra os endereços HTTP.
 
@@ -23,6 +24,9 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::apiResource('interesses', InteresseController::class)
             ->parameters(['interesses' => 'interesse'])
             ->only(['index', 'store', 'destroy']);
+        Route::apiResource('matches', MatchController::class)
+            ->parameters(['matches' => 'match'])
+            ->only(['index', 'show']);
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::delete('/me', [AccountController::class, 'destroy']); // Exclui a conta confirmando a senha.
