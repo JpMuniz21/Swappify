@@ -5,6 +5,7 @@ import Profile from './pages/Profile/Profile';
 import Chat from './pages/Chat/chat';
 import Favoritos from './pages/Favoritos/Favoritos';
 import Match from './pages/Match/Match';
+import MinhasTrocas from './pages/MinhasTrocas';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/favoritos" element={<Favoritos />} />
         <Route path="/match" element={<Match />} />
+        <Route path="/minhas-trocas" element={<MinhasTrocas />} />
       </Routes>
     </BrowserRouter>
   );
