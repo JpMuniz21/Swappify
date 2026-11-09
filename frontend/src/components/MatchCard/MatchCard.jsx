@@ -21,7 +21,11 @@ export default function MatchCard({ perfil, animacao }) {
     trocasRealizadas,
     taxaConclusao,
     foto,
+    servico,
   } = perfil;
+
+  // As métricas só aparecem quando existirem dados reais (a API ainda não fornece).
+  const temMetricas = avaliacao != null || trocasRealizadas != null || taxaConclusao != null;
 
   const classeAnimacao =
     animacao === 'like' ? 'match-card--saindo-direita' :
@@ -70,11 +74,20 @@ export default function MatchCard({ perfil, animacao }) {
           </div>
         </div>
 
+        {servico?.titulo && (
+          <div className="match-card-servico">
+            <span className="match-card-servico-rotulo">Oferece</span>
+            <strong className="match-card-servico-titulo">{servico.titulo}</strong>
+            {servico.descricao && <p className="match-card-servico-descricao">{servico.descricao}</p>}
+          </div>
+        )}
+
         {bio && (
           <p className="match-card-bio">{bio}</p>
         )}
 
         {/* metricas */}
+        {temMetricas && (
         <div className="match-card-metricas" aria-label="Metricas do perfil">
           <div className="match-card-metrica-item">
             <div className="match-card-metrica-valor-linha">
@@ -104,6 +117,7 @@ export default function MatchCard({ perfil, animacao }) {
             <span className="match-card-metrica-rotulo">Taxa de conclusao</span>
           </div>
         </div>
+        )}
       </div>
     </article>
   );

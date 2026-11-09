@@ -220,3 +220,20 @@
     align-items: flex-start;
   }
 }
+
+/* avisos e carregamento (dados da API) */
+.fav-aviso {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #a12c2c;
+  font-size: 0.85rem;
+}
+
+.fav-carregando {
+  margin: 24px 0;
+  text-align: center;
+  color: #726c7c;
+  font-size: 0.9rem;
+}

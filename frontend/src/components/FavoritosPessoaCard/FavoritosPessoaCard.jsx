@@ -1,11 +1,11 @@
 ﻿import './FavoritosPessoaCard.css';
 
-export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover }) {
+export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover, rotuloRemover = 'Remover' }) {
   const { id, nome, profissao, localizacao, online, avaliacao, tags, avatar } = pessoa;
 
   return (
     <article className="fav-pessoa-card" aria-label={`Favorito: ${nome}`}>
-      <button type="button" className="fav-card-coracao" aria-label={`Remover ${nome} dos favoritos`} onClick={() => onRemover(id)} title="Remover dos favoritos">
+      <button type="button" className="fav-card-coracao" aria-label={`${rotuloRemover}: ${nome}`} onClick={() => onRemover(id)} title={rotuloRemover}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
@@ -26,15 +26,19 @@ export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover }) 
       <div className="fav-pessoa-info">
         <div className="fav-pessoa-nome-linha">
           <h3 className="fav-pessoa-nome">{nome}</h3>
+          {avaliacao != null && (
           <span className="fav-pessoa-avaliacao" aria-label={`Avaliacao ${avaliacao}`}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="#fbbd08" aria-hidden="true">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
             {avaliacao}
           </span>
+          )}
         </div>
         <p className="fav-pessoa-profissao">{profissao}</p>
+        {(localizacao || online != null) && (
         <div className="fav-pessoa-meta">
+          {localizacao && (
           <span className="fav-pessoa-local">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -42,11 +46,15 @@ export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover }) 
             </svg>
             {localizacao}
           </span>
+          )}
+          {online != null && (
           <span className={`fav-pessoa-status ${online ? 'fav-pessoa-status--online' : 'fav-pessoa-status--offline'}`}>
             <span className="fav-pessoa-status-dot" aria-hidden="true" />
             {online ? 'Online' : 'Offline'}
           </span>
+          )}
         </div>
+        )}
         {tags?.length > 0 && (
           <ul className="fav-tags" aria-label="Habilidades">
             {tags.map((tag) => (
@@ -69,7 +77,7 @@ export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover }) 
             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
             <path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
           </svg>
-          Remover
+          {rotuloRemover}
         </button>
       </div>
     </article>

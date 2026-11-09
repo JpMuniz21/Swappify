@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Troca;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,6 +27,17 @@ class InteresseResource extends JsonResource
                     'profession' => $this->servico->usuario->profession,
                 ],
             ],
+            // Match ativo que depende deste favorito. Remover o favorito apaga esse match
+            // e as mensagens (cascata), então o frontend usa este campo para avisar antes.
+            // A listagem já traz match_id pela subconsulta do controller; nos outros casos, consulta aqui.
+            'match_id' => array_key_exists('match_id', $this->resource->getAttributes())
+                ? $this->resource->getAttribute('match_id')
+                : Troca::query()
+                    ->where('status', 'ativo')
+                    ->where(fn ($query) => $query
+                        ->where('interesse_1_id', $this->id)
+                        ->orWhere('interesse_2_id', $this->id))
+                    ->value('id'),
             'created_at' => $this->created_at,
         ];
     }

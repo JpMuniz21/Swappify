@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TrocaResource;
 use App\Models\Troca;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -31,5 +32,23 @@ class MatchController extends Controller
         );
 
         return new TrocaResource($match->load(['usuario1', 'usuario2', 'servico1', 'servico2']));
+    }
+
+    // POST /api/matches/{id}/cancelar: qualquer participante pode desfazer o match.
+    // O registro e as mensagens são mantidos; o match só deixa de aparecer na lista e no chat.
+    public function cancelar(Request $request, Troca $match): JsonResponse
+    {
+        abort_unless(
+            in_array($request->user()->id, [$match->usuario_1_id, $match->usuario_2_id], true),
+            403
+        );
+
+        if ($match->status !== 'ativo') {
+            return response()->json(['message' => 'Este match já foi cancelado.'], 409);
+        }
+
+        $match->update(['status' => 'cancelado']);
+
+        return response()->json(['message' => 'Match cancelado.']);
     }
 }

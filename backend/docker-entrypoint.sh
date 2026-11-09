@@ -10,4 +10,4 @@ composer install --no-interaction --prefer-dist
 if ! grep -q '^APP_KEY=base64:' .env; then
     php artisan key:generate --no-interaction
 fi
-exec php artisan serve --host=0.0.0.0 --port=8000
+exec php artisan serve --host=0.0.0.0 --port=8000 --no-reload

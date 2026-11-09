@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->belongsTo(Localizacao::class, 'location_id');
     }
 
+    public function servicosProcurados(): HasMany
+    {
+        return $this->hasMany(ServicoProcurado::class, 'usuario_id')->orderBy('id'); // ordem em que foram adicionados
+    }
+
     public function servicos(): HasMany
     {
         return $this->hasMany(Servico::class, 'usuario_id');

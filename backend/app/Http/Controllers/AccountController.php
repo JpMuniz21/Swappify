@@ -60,7 +60,7 @@ class AccountController extends Controller
     // READ: o usuário vem da sessão, nunca de um ID escolhido pelo frontend.
     public function show(Request $request): JsonResponse
     {
-        return response()->json(['data' => $request->user('web')->load('localizacao')]); // Retorna somente a própria conta.
+        return response()->json(['data' => $request->user('web')->load(['localizacao', 'servicos.categoria', 'servicosProcurados'])]); // Retorna a própria conta, o que oferece e o que procura.
     }
 
     // UPDATE: permite mudanças parciais; campos ausentes são preservados.

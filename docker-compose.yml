@@ -37,6 +37,12 @@ services:
       APP_DEBUG: "true"
       APP_URL: http://localhost:8000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      # Sem isso o "artisan serve" atende uma requisição por vez e as telas que
+      # pedem várias coisas ao mesmo tempo ficam numa fila.
+      # (exige o --no-reload no docker-entrypoint.sh; mudanças no .env pedem restart do container)
+      PHP_CLI_SERVER_WORKERS: 4
+      # Reaproveita a conexão com o Supabase entre requisições (ver config/database.php).
+      DB_PERSISTENT: "true"
     volumes:
       - ./backend:/var/www/html
       - backend_vendor:/var/www/html/vendor

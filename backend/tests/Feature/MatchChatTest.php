@@ -69,4 +69,41 @@ class MatchChatTest extends TestCase
         $this->actingAs($outraPessoa)->postJson("/api/conversas/{$matchId}/mensagens", ['conteudo' => 'Intrusão'])
             ->assertNotFound();
     }
+
+    public function test_participant_can_cancel_match_and_it_leaves_lists_and_chat(): void
+    {
+        [$ana, $bia, , , $matchId] = $this->criarMatchReciproco();
+        $outraPessoa = User::factory()->create();
+        $this->actingAs($ana)->postJson("/api/conversas/{$matchId}/mensagens", ['conteudo' => 'Oi'])->assertCreated();
+
+        $this->actingAs($outraPessoa)->postJson("/api/matches/{$matchId}/cancelar")->assertForbidden();
+        $this->actingAs($bia)->postJson("/api/matches/{$matchId}/cancelar")->assertOk();
+        $this->actingAs($ana)->postJson("/api/matches/{$matchId}/cancelar")->assertStatus(409);
+
+        $this->assertDatabaseHas('matches', ['id' => $matchId, 'status' => 'cancelado']);
+        $this->assertDatabaseHas('mensagens', ['match_id' => $matchId, 'conteudo' => 'Oi']); // histórico preservado
+        $this->actingAs($ana)->getJson('/api/matches')->assertOk()->assertJsonCount(0, 'data');
+        $this->actingAs($ana)->getJson('/api/conversas')->assertOk()->assertJsonCount(0);
+        $this->actingAs($ana)->getJson("/api/conversas/{$matchId}/mensagens")->assertNotFound();
+        $this->actingAs($ana)->getJson('/api/interesses')->assertOk()->assertJsonPath('data.0.match_id', null);
+    }
+
+    public function test_favorites_list_reports_the_match_that_depends_on_them(): void
+    {
+        [$ana, , , , $matchId] = $this->criarMatchReciproco();
+
+        $this->actingAs($ana)->getJson('/api/interesses')->assertOk()
+            ->assertJsonPath('data.0.match_id', $matchId);
+    }
+
+    public function test_non_numeric_ids_return_not_found_instead_of_server_error(): void
+    {
+        $ana = User::factory()->create();
+
+        $this->actingAs($ana)->getJson('/api/conversas/abc/mensagens')->assertNotFound();
+        $this->actingAs($ana)->getJson('/api/matches/abc')->assertNotFound();
+        $this->actingAs($ana)->postJson('/api/matches/abc/cancelar')->assertNotFound();
+        $this->getJson('/api/postagens/abc')->assertNotFound();
+        $this->getJson('/api/servicos/abc')->assertNotFound();
+    }
 }
