@@ -97,9 +97,9 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
       </div>
 
       <div className="navbar-actions">
-        {/* icone de mensagens */}
-        <button
-          type="button"
+          {/* icone de mensagens */}
+        <Link
+          to="/chat"
           className="navbar-icon-btn"
           aria-label="Mensagens"
           title="Mensagens"
@@ -117,7 +117,7 @@ export default function Navbar({ usuario, onLogout, onEditProfile }) {
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-        </button>
+        </Link>
 
         {/* icone de favoritos */}
         <Link
