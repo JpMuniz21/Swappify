@@ -1,163 +1,139 @@
-﻿import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import FavoritosPessoaCard from '../../components/FavoritosPessoaCard/FavoritosPessoaCard';
 import FavoritosServicoCard from '../../components/FavoritosServicoCard/FavoritosServicoCard';
 import FavoritosFiltros from '../../components/FavoritosFiltros/FavoritosFiltros';
 import FavoritosEmpty from '../../components/FavoritosEmpty/FavoritosEmpty';
+import { logout } from '../../services/authService';
+import { listarFavoritos, removerFavorito, listarMatches, cancelarMatch } from '../../services/matchService';
 import './Favoritos.css';
 
-// dados mockados de pessoas favoritadas
-const PESSOAS_MOCK = [
-  {
-    id: 'p1',
-    nome: 'Mariana Silva',
-    profissao: 'Designer Grafica',
-    localizacao: 'Sao Paulo, SP',
-    online: true,
-    avaliacao: '4.9',
-    tags: ['Design', 'Identidade Visual', 'Branding'],
-    avatar: null,
-    tipo: 'pessoa',
-    adicionadoEm: new Date('2026-10-20'),
-  },
-  {
-    id: 'p2',
-    nome: 'Joao Pedro',
-    profissao: 'Editor de Video',
-    localizacao: 'Rio de Janeiro, RJ',
-    online: true,
-    avaliacao: '4.8',
-    tags: ['Video', 'Edicao', 'Motion'],
-    avatar: null,
-    tipo: 'pessoa',
-    adicionadoEm: new Date('2026-10-19'),
-  },
-  {
-    id: 'p3',
-    nome: 'Camila Santos',
-    profissao: 'Social Media',
-    localizacao: 'Belo Horizonte, MG',
-    online: true,
-    avaliacao: '4.7',
-    tags: ['Marketing', 'Conteudo', 'Instagram'],
-    avatar: null,
-    tipo: 'pessoa',
-    adicionadoEm: new Date('2026-10-18'),
-  },
-  {
-    id: 'p4',
-    nome: 'Lucas Almeida',
-    profissao: 'Desenvolvedor Web',
-    localizacao: 'Curitiba, PR',
-    online: true,
-    avaliacao: '4.9',
-    tags: ['Web', 'React', 'JavaScript'],
-    avatar: null,
-    tipo: 'pessoa',
-    adicionadoEm: new Date('2026-10-17'),
-  },
-];
+// Favorito (InteresseResource) → card de serviço
+function paraServico(interesse) {
+  return {
+    id: interesse.id,
+    titulo: interesse.servico?.titulo ?? 'Serviço',
+    descricao: interesse.servico?.descricao ?? '',
+    prestador: { nome: interesse.servico?.usuario?.name ?? 'Usuário' },
+    tags: interesse.servico?.tipo ? [interesse.servico.tipo] : [],
+    tipo: 'servico',
+    adicionadoEm: new Date(interesse.data_criacao ?? interesse.created_at ?? 0),
+    matchId: interesse.match_id ?? null,
+  };
+}
 
-// dados mockados de servicos favoritados
-const SERVICOS_MOCK = [
-  {
-    id: 's1',
-    titulo: 'Identidade Visual',
-    descricao: 'Criacao completa de identidade visual para marcas e empresas.',
-    prestador: { nome: 'Mariana Silva', avaliacao: '4.9' },
-    tags: ['Design', 'Branding', 'Logo'],
-    iconeTipo: 'design',
-    tipo: 'servico',
-    adicionadoEm: new Date('2026-10-20'),
-  },
-  {
-    id: 's2',
-    titulo: 'Edicao de Videos',
-    descricao: 'Edicao de videos para redes sociais, YouTube e conteudo digital.',
-    prestador: { nome: 'Joao Pedro', avaliacao: '4.8' },
-    tags: ['Video', 'Edicao', 'YouTube'],
-    iconeTipo: 'edicao-video',
-    tipo: 'servico',
-    adicionadoEm: new Date('2026-10-19'),
-  },
-  {
-    id: 's3',
-    titulo: 'Gestao de Redes Sociais',
-    descricao: 'Gestao completa das suas redes sociais e criacao de conteudo.',
-    prestador: { nome: 'Camila Santos', avaliacao: '4.7' },
-    tags: ['Marketing', 'Instagram', 'Conteudo'],
-    iconeTipo: 'marketing',
-    tipo: 'servico',
-    adicionadoEm: new Date('2026-10-18'),
-  },
-  {
-    id: 's4',
-    titulo: 'Criacao de Sites',
-    descricao: 'Sites institucionais, landing pages e lojas virtuais.',
-    prestador: { nome: 'Lucas Almeida', avaliacao: '4.9' },
-    tags: ['Web', 'Landing Page', 'WordPress'],
-    iconeTipo: 'criacao-sites',
-    tipo: 'servico',
-    adicionadoEm: new Date('2026-10-17'),
-  },
-];
+// Match (TrocaResource) → card de pessoa
+function paraPessoa(match) {
+  return {
+    id: match.id,
+    nome: match.outro?.name ?? 'Usuário',
+    profissao: match.outro?.profession || 'Membro Swappify',
+    tags: [match.servico_do_outro?.titulo, match.meu_servico?.titulo].filter(Boolean),
+    tipo: 'pessoa',
+    adicionadoEm: new Date(match.data_match ?? 0),
+  };
+}
+
+const contem = (texto, termo) => (texto ?? '').toLowerCase().includes(termo);
 
 export default function Favoritos() {
   const navigate = useNavigate();
+  const { usuario } = useOutletContext() ?? {};
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState('todos');
-  const [pessoas, setPessoas] = useState(PESSOAS_MOCK);
-  const [servicos, setServicos] = useState(SERVICOS_MOCK);
+  const [pessoas, setPessoas] = useState([]);
+  const [servicos, setServicos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [aviso, setAviso] = useState('');
 
-  // remove uma pessoa dos favoritos
-  function handleRemoverPessoa(id) {
-    setPessoas((prev) => prev.filter((p) => p.id !== id));
+  useEffect(() => {
+    let ativo = true;
+    Promise.all([listarFavoritos(), listarMatches()])
+      .then(([favoritos, matches]) => {
+        if (!ativo) return;
+        setServicos(favoritos.map(paraServico));
+        setPessoas(matches.map(paraPessoa));
+      })
+      .catch(() => { if (ativo) setAviso('Não foi possível carregar seus favoritos. Recarregue a página.'); })
+      .finally(() => { if (ativo) setCarregando(false); });
+    return () => { ativo = false; };
+  }, []);
+
+  function tratarErro(erro, padrao) {
+    if (erro.status === 401 || erro.status === 419) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    setAviso(erro.message ?? padrao);
   }
 
-  // remove um servico dos favoritos
-  function handleRemoverServico(id) {
-    setServicos((prev) => prev.filter((s) => s.id !== id));
+  // "Desfazer match": cancela o match (a conversa deixa de aparecer no chat)
+  async function handleRemoverPessoa(matchId) {
+    const pessoa = pessoas.find((p) => p.id === matchId);
+    const ok = window.confirm(
+      `Desfazer o match com ${pessoa?.nome ?? 'essa pessoa'}? A conversa de vocês deixará de aparecer no chat.`
+    );
+    if (!ok) return;
+    try {
+      await cancelarMatch(matchId);
+      setPessoas((prev) => prev.filter((p) => p.id !== matchId));
+      setServicos((prev) => prev.map((s) => (s.matchId === matchId ? { ...s, matchId: null } : s)));
+      setAviso('');
+    } catch (erro) {
+      tratarErro(erro, 'Não foi possível desfazer o match.');
+    }
   }
 
-  // redireciona para o chat ao clicar em Conversar
-  function handleConversar(id) {
-    navigate('/chat');
+  // Remover um serviço dos favoritos. Se ele sustenta um match, o backend apaga
+  // o match e as mensagens junto (regra atual), então avisamos antes.
+  async function handleRemoverServico(interesseId) {
+    const servico = servicos.find((s) => s.id === interesseId);
+    if (servico?.matchId) {
+      const ok = window.confirm(
+        `Atenção: você tem um match ligado a "${servico.titulo}". Remover este favorito vai desfazer o match `
+        + `e apagar a conversa de vocês, para os dois. Deseja continuar?`
+      );
+      if (!ok) return;
+    }
+    try {
+      await removerFavorito(interesseId);
+      setServicos((prev) => prev.filter((s) => s.id !== interesseId));
+      if (servico?.matchId) setPessoas((prev) => prev.filter((p) => p.id !== servico.matchId));
+      setAviso('');
+    } catch (erro) {
+      tratarErro(erro, 'Não foi possível remover o favorito.');
+    }
   }
 
-  // redireciona para o perfil ao clicar em Ver perfil
-  function handleVerPerfil(id) {
-    navigate('/perfil');
+  async function sair() {
+    try {
+      await logout();
+    } finally {
+      navigate('/login', { replace: true });
+    }
   }
 
   // filtra e busca os itens conforme o filtro ativo e o texto de busca
   const { pessoasFiltradas, servicosFiltrados } = useMemo(() => {
-    const termoBusca = busca.toLowerCase().trim();
+    const termo = busca.toLowerCase().trim();
 
-    const pessoasVisiveis = (filtro === 'todos' || filtro === 'pessoas' || filtro === 'recentes' || filtro === 'matches')
-      ? pessoas.filter((p) => {
-          if (!termoBusca) return true;
-          return (
-            p.nome.toLowerCase().includes(termoBusca) ||
-            p.profissao.toLowerCase().includes(termoBusca) ||
-            p.tags.some((t) => t.toLowerCase().includes(termoBusca))
-          );
-        })
+    // Todas as pessoas aqui são matches, então "Pessoas" e "Matches" mostram o mesmo grupo.
+    const pessoasVisiveis = ['todos', 'pessoas', 'recentes', 'matches'].includes(filtro)
+      ? pessoas.filter((p) => !termo
+          || contem(p.nome, termo)
+          || contem(p.profissao, termo)
+          || p.tags.some((t) => contem(t, termo)))
       : [];
 
-    const servicosVisiveis = (filtro === 'todos' || filtro === 'servicos' || filtro === 'recentes')
-      ? servicos.filter((s) => {
-          if (!termoBusca) return true;
-          return (
-            s.titulo.toLowerCase().includes(termoBusca) ||
-            s.descricao.toLowerCase().includes(termoBusca) ||
-            s.tags.some((t) => t.toLowerCase().includes(termoBusca)) ||
-            (s.prestador?.nome || '').toLowerCase().includes(termoBusca)
-          );
-        })
+    const servicosVisiveis = ['todos', 'servicos', 'recentes'].includes(filtro)
+      ? servicos.filter((s) => !termo
+          || contem(s.titulo, termo)
+          || contem(s.descricao, termo)
+          || s.tags.some((t) => contem(t, termo))
+          || contem(s.prestador?.nome, termo))
       : [];
 
-    // ordena por mais recente se filtro for 'recentes'
     if (filtro === 'recentes') {
       pessoasVisiveis.sort((a, b) => b.adicionadoEm - a.adicionadoEm);
       servicosVisiveis.sort((a, b) => b.adicionadoEm - a.adicionadoEm);
@@ -166,12 +142,11 @@ export default function Favoritos() {
     return { pessoasFiltradas: pessoasVisiveis, servicosFiltrados: servicosVisiveis };
   }, [busca, filtro, pessoas, servicos]);
 
-  const totalFavoritos = pessoas.length + servicos.length;
-  const nenhumResultado = pessoasFiltradas.length === 0 && servicosFiltrados.length === 0;
+  const nenhumResultado = !carregando && pessoasFiltradas.length === 0 && servicosFiltrados.length === 0;
 
   return (
     <div className="fav-pagina">
-      <Navbar />
+      <Navbar usuario={usuario} onLogout={sair} onEditProfile={() => navigate('/perfil')} />
 
       <main className="fav-main" id="main-content">
         <div className="fav-container">
@@ -186,26 +161,9 @@ export default function Favoritos() {
               </div>
               <div>
                 <h1 className="fav-titulo">Favoritos</h1>
-                <p className="fav-subtitulo">Pessoas e servicos que voce salvou para depois.</p>
+                <p className="fav-subtitulo">Serviços que você curtiu e pessoas com quem deu match.</p>
               </div>
             </div>
-            <button
-              type="button"
-              id="btn-organizar-favoritos"
-              className="fav-btn-organizar"
-              aria-label="Organizar favoritos"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
-              Organizar
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
           </header>
 
           {/* campo de busca */}
@@ -228,16 +186,20 @@ export default function Favoritos() {
           {/* filtros */}
           <FavoritosFiltros filtroAtivo={filtro} onFiltroChange={setFiltro} />
 
-          {/* grid de pessoas */}
+          {aviso && <p className="fav-aviso" role="alert">{aviso}</p>}
+          {carregando && <p className="fav-carregando" role="status">Carregando favoritos…</p>}
+
+          {/* grid de pessoas (matches) */}
           {pessoasFiltradas.length > 0 && (
-            <section className="fav-secao" aria-label="Pessoas favoritadas">
+            <section className="fav-secao" aria-label="Pessoas com quem você deu match">
               <div className="fav-grid fav-grid--pessoas">
                 {pessoasFiltradas.map((pessoa) => (
                   <FavoritosPessoaCard
                     key={pessoa.id}
                     pessoa={pessoa}
-                    onConversar={handleConversar}
+                    onConversar={() => navigate('/chat')}
                     onRemover={handleRemoverPessoa}
+                    rotuloRemover="Desfazer match"
                   />
                 ))}
               </div>
@@ -252,7 +214,6 @@ export default function Favoritos() {
                   <FavoritosServicoCard
                     key={servico.id}
                     servico={servico}
-                    onVerPerfil={handleVerPerfil}
                     onRemover={handleRemoverServico}
                   />
                 ))}
@@ -260,14 +221,9 @@ export default function Favoritos() {
             </section>
           )}
 
-          {/* estado vazio */}
-          {nenhumResultado && (
-            <FavoritosEmpty onExplorar={() => navigate('/perfil')} />
-          )}
-
-          {/* banner de estado vazio global (sem nenhum favorito salvo) */}
-          {totalFavoritos === 0 && (
-            <FavoritosEmpty onExplorar={() => navigate('/perfil')} />
+          {/* estado vazio (sem favoritos ou busca sem resultado) */}
+          {nenhumResultado && !aviso && (
+            <FavoritosEmpty onExplorar={() => navigate('/match')} />
           )}
 
         </div>

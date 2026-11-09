@@ -1071,3 +1071,46 @@
     max-width: 100%;
   }
 }
+/* contador e erros dos formularios de perfil */
+.perfil-contador-caracteres {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: #8a8494;
+  text-align: right;
+}
+
+.perfil-erro {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fdecec;
+  color: #a12c2c;
+  font-size: 0.85rem;
+}
+
+/* localizacao em tres campos */
+.perfil-local-grupo {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.perfil-local-campos {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 8px;
+}
+
+.perfil-local-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #5c5666;
+}
+
+@media (max-width: 600px) {
+  .perfil-local-campos {
+    grid-template-columns: 1fr;
+  }
+}

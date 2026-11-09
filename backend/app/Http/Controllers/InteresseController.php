@@ -20,6 +20,14 @@ class InteresseController extends Controller
         return InteresseResource::collection(
             $request->user()->interesses()
                 ->with('servico.usuario')
+                // match_id de cada favorito na mesma consulta (evita 1 consulta extra por item)
+                ->addSelect(['match_id' => Troca::query()
+                    ->select('id')
+                    ->where('status', 'ativo')
+                    ->where(fn ($query) => $query
+                        ->whereColumn('interesse_1_id', 'interesses.id')
+                        ->orWhereColumn('interesse_2_id', 'interesses.id'))
+                    ->limit(1)])
                 ->where('status', 'ativo')
                 ->orderByDesc('data_criacao')
                 ->paginate(15)

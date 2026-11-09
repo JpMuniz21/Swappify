@@ -4,6 +4,9 @@ import Navbar from '../../components/Navbar/Navbar';
 import Modal from '../../components/Modal/Modal';
 import ServiceSelectModal from '../../components/ServiceSelectModal/ServiceSelectModal';
 import { consultarPerfil, atualizarPerfil, logout } from '../../services/authService';
+import {
+  listarCategorias, criarServico, excluirServico, adicionarProcurado, removerProcurado,
+} from '../../services/servicoService';
 import avatarLucas from '../../assets/lucas-avatar.jpg';
 import fotoPortfolioPet from '../../assets/portfolio-pet.png';
 import './Profile.css';
@@ -33,8 +36,63 @@ const DADOS_DISPONIBILIDADE_INICIAL = {
 const TEXTO_SOBRE_MIM_PLACEHOLDER =
   'Conte um pouco sobre você, sua experiência e os serviços que oferece para ajudar outros usuários a conhecerem melhor seu perfil.';
 
-const TEXTO_PERFIL_LUCAS =
-  'Apaixonado pelo universo pet e pelo cuidado com os animais, atuo no ramo de pet shop oferecendo produtos e serviços com qualidade, carinho e dedicação. Meu objetivo é garantir bem-estar, conforto e felicidade para os pets, além de praticidade e confiança para seus tutores.';
+// Item do catálogo do ServiceSelectModal → nome da categoria no banco (CategoriaSeeder).
+const CATEGORIA_POR_CODIGO = {
+  'design-grafico': 'Criatividade',
+  'edicao-video': 'Criatividade',
+  'marketing-conteudo': 'Criatividade',
+  'educacao-aulas': 'Educação',
+  'criacao-sites': 'Tecnologia',
+  'personal-fitness': 'Saúde e bem-estar',
+  'servicos-gerais': 'Serviços gerais',
+  'produtos-saude-pets': 'Pets',
+  personalizado: 'Outros',
+};
+
+// Serviço da API (ServicoResource) → formato dos cards do perfil.
+// "codigo" guarda o item do catálogo (salvo em "tipo") para o modal marcá-lo como selecionado.
+function servicoDaApi(servico) {
+  return {
+    id: servico.id,
+    codigo: servico.tipo,
+    titulo: servico.titulo,
+    descricao: servico.descricao,
+    iconeTipo: servico.tipo,
+  };
+}
+
+// Item de "O que eu procuro" vindo da API → formato dos cards do perfil.
+function procuradoDaApi(item) {
+  return {
+    id: item.id,
+    codigo: item.codigo,
+    titulo: item.titulo,
+    descricao: item.descricao || '',
+    iconeTipo: item.codigo,
+  };
+}
+
+// Limites iguais aos da API (AccountController@update).
+const LIMITE_BIO = 240;
+const LIMITE_PROFISSAO = 100;
+const LIMITE_LOCAL = 50;
+
+// O texto de exemplo só é exibido na tela; nunca é enviado como bio.
+function bioParaApi(texto) {
+  const limpo = (texto ?? '').trim();
+  return limpo && limpo !== TEXTO_SOBRE_MIM_PLACEHOLDER ? limpo : null;
+}
+
+// "Fortaleza, CE" a partir do objeto localizacao da API.
+function formatarLocal(localizacao) {
+  if (!localizacao) return '';
+  return [localizacao.cidade, localizacao.estado].filter(Boolean).join(', ');
+}
+
+// Primeira mensagem de erro de validação do Laravel, ou a mensagem geral.
+function mensagemDeErro(erro, padrao) {
+  return Object.values(erro?.errors ?? {})[0]?.[0] ?? erro?.message ?? padrao;
+}
 
 // icone do card de servico no perfil
 function IconeCardServico({ tipo }) {
@@ -91,6 +149,11 @@ export default function Profile() {
   // servicos selecionados
   const [servicosOferecidos, setServicosOferecidos] = useState([]);
   const [servicosProcurados, setServicosProcurados] = useState([]);
+  const [categorias, setCategorias] = useState({}); // { 'Tecnologia': 2, ... }
+  const [salvandoServico, setSalvandoServico] = useState(false);
+  const [erroServicos, setErroServicos] = useState('');
+  const [salvandoProcurado, setSalvandoProcurado] = useState(false);
+  const [erroProcurados, setErroProcurados] = useState('');
 
   // controle dos modais
   const [modalOferecoAberto, setModalOferecoAberto] = useState(false);
@@ -120,11 +183,15 @@ export default function Profile() {
   const [formPerfil, setFormPerfil] = useState({
     name: DADOS_INICIAIS_FIGMA.name,
     profession: DADOS_INICIAIS_FIGMA.profession,
-    location: DADOS_INICIAIS_FIGMA.location,
-    bio: TEXTO_SOBRE_MIM_PLACEHOLDER,
+    cidade: '',
+    estado: '',
+    bairro: '',
+    bio: '',
   });
 
   const [salvandoPerfil, setSalvandoPerfil] = useState(false);
+  const [erroPerfil, setErroPerfil] = useState('');
+  const [erroBio, setErroBio] = useState('');
 
 
   useEffect(() => {
@@ -142,25 +209,28 @@ export default function Profile() {
             name: dadosApi.name || antigo.name,
             profession: dadosApi.profession || antigo.profession,
             bio: bioApi,
-            location: dadosApi.localizacao
-              ? `${dadosApi.localizacao.cidade ? dadosApi.localizacao.cidade + ' | ' : ''}${dadosApi.localizacao.estado || ''}`
-              : antigo.location,
+            location: formatarLocal(dadosApi.localizacao),
             avatar_url: dadosApi.avatar_url || antigo.avatar_url,
           }));
 
           setBio(bioApi);
-          setBioInput(bioApi);
+          setBioInput(dadosApi.bio || '');
 
           setFormPerfil({
             name: dadosApi.name || DADOS_INICIAIS_FIGMA.name,
-            profession: dadosApi.profession || DADOS_INICIAIS_FIGMA.profession,
-            location: dadosApi.localizacao?.estado || DADOS_INICIAIS_FIGMA.location,
-            bio: bioApi,
+            profession: dadosApi.profession || '',
+            cidade: dadosApi.localizacao?.cidade || '',
+            estado: dadosApi.localizacao?.estado || '',
+            bairro: dadosApi.localizacao?.bairro || '',
+            bio: dadosApi.bio || '',
           });
 
           // servicos cadastrados do usuario
-          if (dadosApi.servicos && Array.isArray(dadosApi.servicos) && dadosApi.servicos.length > 0) {
-            setServicosOferecidos(dadosApi.servicos);
+          if (Array.isArray(dadosApi.servicos)) {
+            setServicosOferecidos(dadosApi.servicos.map(servicoDaApi));
+          }
+          if (Array.isArray(dadosApi.servicos_procurados)) {
+            setServicosProcurados(dadosApi.servicos_procurados.map(procuradoDaApi));
           }
         }
       })
@@ -171,6 +241,17 @@ export default function Profile() {
     return () => {
       ativo = false;
     };
+  }, []);
+
+  // categorias para cadastrar os serviços oferecidos com o categoria_id certo
+  useEffect(() => {
+    let ativo = true;
+    listarCategorias()
+      .then((lista) => {
+        if (ativo) setCategorias(Object.fromEntries(lista.map((c) => [c.nome, c.id])));
+      })
+      .catch(() => { /* o erro aparece ao tentar salvar um serviço */ });
+    return () => { ativo = false; };
   }, []);
 
   // logout do usuario
@@ -186,57 +267,84 @@ export default function Profile() {
 
   // alteracao do texto sobre mim
   function handleCliqueAlterarBio() {
-    if (!bio || bio === TEXTO_SOBRE_MIM_PLACEHOLDER) {
-      setBio(TEXTO_PERFIL_LUCAS);
-      setBioInput(TEXTO_PERFIL_LUCAS);
-      setUsuario((prev) => ({ ...prev, bio: TEXTO_PERFIL_LUCAS }));
-      setFormPerfil((prev) => ({ ...prev, bio: TEXTO_PERFIL_LUCAS }));
-    } else {
-      setBioInput(bio);
-    }
+    // Começa vazio quando ainda não há bio (o texto de exemplo fica só como placeholder).
+    setBioInput(bio === TEXTO_SOBRE_MIM_PLACEHOLDER ? '' : bio);
+    setErroBio('');
     setEditandoBio(true);
   }
 
   function handleCancelarEdicaoBio() {
+    setErroBio('');
     setEditandoBio(false);
   }
 
+  // Aplica na tela os dados que a API confirmou.
+  function aplicarPerfilSalvo(dados) {
+    const bioSalva = dados.bio || TEXTO_SOBRE_MIM_PLACEHOLDER;
+    setUsuario((prev) => ({
+      ...prev,
+      name: dados.name,
+      profession: dados.profession || '',
+      location: formatarLocal(dados.localizacao),
+      bio: bioSalva,
+    }));
+    setBio(bioSalva);
+    setBioInput(dados.bio || '');
+    setFormPerfil({
+      name: dados.name,
+      profession: dados.profession || '',
+      cidade: dados.localizacao?.cidade || '',
+      estado: dados.localizacao?.estado || '',
+      bairro: dados.localizacao?.bairro || '',
+      bio: dados.bio || '',
+    });
+  }
+
   async function handleSalvarBio() {
-    const textoSalvo = bioInput.trim() || TEXTO_SOBRE_MIM_PLACEHOLDER;
-    setBio(textoSalvo);
-    setUsuario((prev) => ({ ...prev, bio: textoSalvo }));
-    setFormPerfil((prev) => ({ ...prev, bio: textoSalvo }));
-    setEditandoBio(false);
+    setErroBio('');
     try {
-      await atualizarPerfil({ bio: textoSalvo });
-    } catch {
-      // fallback offline
+      const resposta = await atualizarPerfil({ bio: bioParaApi(bioInput) });
+      aplicarPerfilSalvo(resposta.data);
+      setEditandoBio(false);
+    } catch (erro) {
+      setErroBio(mensagemDeErro(erro, 'Não foi possível salvar. Tente novamente.'));
     }
+  }
+
+  function abrirEdicaoPerfil() {
+    setErroPerfil('');
+    setModalEditarPerfilAberto(true);
   }
 
   // edicao do perfil geral
   async function handleSalvarPerfil(e) {
     e.preventDefault();
+    setErroPerfil('');
+
+    const { cidade, estado, bairro } = formPerfil;
+    const camposLocal = [cidade, estado, bairro].map((v) => v.trim());
+    const algumLocal = camposLocal.some(Boolean);
+    if (algumLocal && !camposLocal.every(Boolean)) {
+      setErroPerfil('Para salvar a localização, preencha cidade, estado e bairro (ou deixe os três em branco).');
+      return;
+    }
+
     setSalvandoPerfil(true);
     try {
-      await atualizarPerfil({
-        name: formPerfil.name,
-        profession: formPerfil.profession,
-        bio: formPerfil.bio,
+      const resposta = await atualizarPerfil({
+        name: formPerfil.name.trim(),
+        profession: formPerfil.profession.trim() || null,
+        bio: bioParaApi(formPerfil.bio),
+        localizacao: algumLocal
+          ? { cidade: camposLocal[0], estado: camposLocal[1], bairro: camposLocal[2] }
+          : null,
       });
-    } catch {
-      // fallback offline
-    } finally {
-      setUsuario((prev) => ({
-        ...prev,
-        name: formPerfil.name,
-        profession: formPerfil.profession,
-        location: formPerfil.location,
-        bio: formPerfil.bio,
-      }));
-      setBio(formPerfil.bio || TEXTO_SOBRE_MIM_PLACEHOLDER);
-      setSalvandoPerfil(false);
+      aplicarPerfilSalvo(resposta.data);
       setModalEditarPerfilAberto(false);
+    } catch (erro) {
+      setErroPerfil(mensagemDeErro(erro, 'Não foi possível salvar o perfil. Tente novamente.'));
+    } finally {
+      setSalvandoPerfil(false);
     }
   }
 
@@ -279,36 +387,129 @@ export default function Profile() {
     setModalEditarDisponibilidade(false);
   }
 
-  // selecao de servicos oferecidos
+  // Serviços oferecidos são salvos na API (POST/DELETE /servicos): é com eles que
+  // as outras pessoas dão "curtir" na tela de Match.
+  async function salvarServicoOferecido(servico) {
+    if (salvandoServico) return;
+    if (servicosOferecidos.length >= 5) {
+      setErroServicos('Você pode oferecer no máximo 5 serviços.');
+      return;
+    }
+    const codigo = servico.acaoEspecial ? 'personalizado' : (servico.codigo ?? servico.id);
+    const categoriaId = categorias[CATEGORIA_POR_CODIGO[codigo] ?? 'Outros'] ?? categorias.Outros;
+    if (!categoriaId) {
+      setErroServicos('Não foi possível carregar as categorias. Recarregue a página e tente de novo.');
+      return;
+    }
+
+    setSalvandoServico(true);
+    setErroServicos('');
+    try {
+      const criado = await criarServico({
+        titulo: servico.titulo.trim().slice(0, 50),
+        descricao: (servico.descricao || servico.titulo).trim().slice(0, 150),
+        tipo: String(codigo).startsWith('custom-') ? 'personalizado' : codigo,
+        categoria_id: categoriaId,
+      });
+      setServicosOferecidos((prev) => [...prev, servicoDaApi(criado)]);
+    } catch (erro) {
+      setErroServicos(mensagemDeErro(erro, 'Não foi possível salvar o serviço.'));
+    } finally {
+      setSalvandoServico(false);
+    }
+  }
+
+  async function removerServicoOferecido(existente) {
+    if (salvandoServico) return;
+    const ok = window.confirm(
+      `Remover "${existente.titulo}" dos serviços que você oferece? `
+      + 'Favoritos, matches e conversas ligados a este serviço também serão apagados.'
+    );
+    if (!ok) return;
+
+    setSalvandoServico(true);
+    setErroServicos('');
+    try {
+      await excluirServico(existente.id);
+      setServicosOferecidos((prev) => prev.filter((s) => s.id !== existente.id));
+    } catch (erro) {
+      setErroServicos(mensagemDeErro(erro, 'Não foi possível remover o serviço.'));
+    } finally {
+      setSalvandoServico(false);
+    }
+  }
+
+  // selecao de servicos oferecidos (vem do catálogo do modal ou de um card já salvo)
   function handleToggleOferecido(servico) {
-    setServicosOferecidos((prev) => {
-      const existe = prev.some((s) => s.id === servico.id);
-      if (existe) {
-        return prev.filter((s) => s.id !== servico.id);
-      }
-      if (prev.length >= 5) return prev;
-      return [...prev, servico];
-    });
+    const existente = servicosOferecidos.find(
+      (s) => s.id === servico.id || (s.codigo && s.codigo === servico.id)
+    );
+    if (existente) {
+      removerServicoOferecido(existente);
+    } else {
+      salvarServicoOferecido(servico);
+    }
   }
 
   // selecao de servicos procurados
+  // "O que eu procuro" é salvo na API (/me/procurados), igual ao "O que ofereço".
+  async function salvarProcurado(servico) {
+    if (salvandoProcurado) return;
+    if (servicosProcurados.length >= 5) {
+      setErroProcurados('Você pode procurar no máximo 5 serviços.');
+      return;
+    }
+    const codigoBruto = servico.codigo ?? servico.id;
+    const codigo = String(codigoBruto).startsWith('custom-') ? 'personalizado' : codigoBruto;
+
+    setSalvandoProcurado(true);
+    setErroProcurados('');
+    try {
+      const criado = await adicionarProcurado({
+        titulo: servico.titulo.trim().slice(0, 50),
+        descricao: (servico.descricao || '').trim().slice(0, 150) || null,
+        codigo,
+      });
+      setServicosProcurados((prev) => [...prev, procuradoDaApi(criado)]);
+    } catch (erro) {
+      setErroProcurados(mensagemDeErro(erro, 'Não foi possível salvar.'));
+    } finally {
+      setSalvandoProcurado(false);
+    }
+  }
+
+  async function excluirProcurado(existente) {
+    if (salvandoProcurado) return;
+    setSalvandoProcurado(true);
+    setErroProcurados('');
+    try {
+      await removerProcurado(existente.id);
+      setServicosProcurados((prev) => prev.filter((s) => s.id !== existente.id));
+    } catch (erro) {
+      setErroProcurados(mensagemDeErro(erro, 'Não foi possível remover.'));
+    } finally {
+      setSalvandoProcurado(false);
+    }
+  }
+
+  // vem do catálogo do modal (id = código do catálogo) ou de um card já salvo (id do banco)
   function handleToggleProcurado(servico) {
-    setServicosProcurados((prev) => {
-      const existe = prev.some((s) => s.id === servico.id);
-      if (existe) {
-        return prev.filter((s) => s.id !== servico.id);
-      }
-      if (prev.length >= 5) return prev;
-      return [...prev, servico];
-    });
+    const existente = servicosProcurados.find(
+      (s) => s.id === servico.id || (s.codigo && s.codigo !== 'personalizado' && s.codigo === servico.id)
+    );
+    if (existente) {
+      excluirProcurado(existente);
+    } else {
+      salvarProcurado(servico);
+    }
   }
 
   function handleAdicionarPersonalizadoOferecido(novoServico) {
-    setServicosOferecidos((prev) => (prev.length < 5 ? [...prev, novoServico] : prev));
+    salvarServicoOferecido({ ...novoServico, codigo: 'personalizado' });
   }
 
   function handleAdicionarPersonalizadoProcurado(novoServico) {
-    setServicosProcurados((prev) => (prev.length < 5 ? [...prev, novoServico] : prev));
+    salvarProcurado({ ...novoServico, codigo: 'personalizado' });
   }
 
   return (
@@ -317,7 +518,7 @@ export default function Profile() {
       <Navbar
         usuario={usuario}
         onLogout={handleLogout}
-        onEditProfile={() => setModalEditarPerfilAberto(true)}
+        onEditProfile={() => abrirEdicaoPerfil}
       />
 
       {/* conteudo principal */}
@@ -338,7 +539,7 @@ export default function Profile() {
 
               <h1 className="perfil-nome-usuario">{usuario.name}</h1>
               <p className="perfil-subtitulo">
-                {usuario.profession} | {usuario.location}
+                {[usuario.profession, usuario.location].filter(Boolean).join(' | ')}
               </p>
 
               {/* estrelas de avaliacao */}
@@ -359,7 +560,7 @@ export default function Profile() {
               <button
                 type="button"
                 className="perfil-btn-editar-perfil"
-                onClick={() => setModalEditarPerfilAberto(true)}
+                onClick={() => abrirEdicaoPerfil}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -422,8 +623,11 @@ export default function Profile() {
                       onChange={(e) => setBioInput(e.target.value)}
                       placeholder={TEXTO_SOBRE_MIM_PLACEHOLDER}
                       rows={4}
+                      maxLength={LIMITE_BIO}
                       autoFocus
                     />
+                    <p className="perfil-contador-caracteres">{bioInput.length}/{LIMITE_BIO}</p>
+                    {erroBio && <p className="perfil-erro" role="alert">{erroBio}</p>}
                     <div className="perfil-sobre-acoes-edicao">
                       <button
                         type="button"
@@ -474,6 +678,9 @@ export default function Profile() {
                 Ver tudo
               </button>
             </div>
+
+            {erroServicos && <p className="perfil-erro" role="alert">{erroServicos}</p>}
+            {salvandoServico && <p className="perfil-contador-caracteres" role="status">Salvando…</p>}
 
             {servicosOferecidos.length === 0 ? (
               /* estado vazio */
@@ -551,6 +758,9 @@ export default function Profile() {
                 Ver tudo
               </button>
             </div>
+
+            {erroProcurados && <p className="perfil-erro" role="alert">{erroProcurados}</p>}
+            {salvandoProcurado && <p className="perfil-contador-caracteres" role="status">Salvando…</p>}
 
             {servicosProcurados.length === 0 ? (
               /* estado vazio */
@@ -1014,6 +1224,7 @@ export default function Profile() {
               id="perfil-nome"
               type="text"
               required
+              maxLength={255}
               className="modal-input"
               value={formPerfil.name}
               onChange={(e) => setFormPerfil({ ...formPerfil, name: e.target.value })}
@@ -1029,24 +1240,35 @@ export default function Profile() {
               type="text"
               className="modal-input"
               placeholder="Ex: Empreendedor, Fotógrafo, Designer..."
+              maxLength={LIMITE_PROFISSAO}
               value={formPerfil.profession}
               onChange={(e) => setFormPerfil({ ...formPerfil, profession: e.target.value })}
             />
           </div>
 
-          <div className="modal-form-grupo">
-            <label htmlFor="perfil-local" className="modal-label">
-              Localização (Cidade ou Estado)
-            </label>
-            <input
-              id="perfil-local"
-              type="text"
-              className="modal-input"
-              placeholder="Ex: Santa Cantarina"
-              value={formPerfil.location}
-              onChange={(e) => setFormPerfil({ ...formPerfil, location: e.target.value })}
-            />
-          </div>
+          <fieldset className="modal-form-grupo perfil-local-grupo">
+            <legend className="modal-label">Localização (preencha os três ou deixe em branco)</legend>
+            <div className="perfil-local-campos">
+              {[
+                ['cidade', 'Cidade', 'Ex: Fortaleza'],
+                ['estado', 'Estado', 'Ex: CE'],
+                ['bairro', 'Bairro', 'Ex: Aldeota'],
+              ].map(([campo, rotulo, exemplo]) => (
+                <label key={campo} className="perfil-local-campo" htmlFor={`perfil-${campo}`}>
+                  <span>{rotulo}</span>
+                  <input
+                    id={`perfil-${campo}`}
+                    type="text"
+                    className="modal-input"
+                    placeholder={exemplo}
+                    maxLength={LIMITE_LOCAL}
+                    value={formPerfil[campo]}
+                    onChange={(e) => setFormPerfil({ ...formPerfil, [campo]: e.target.value })}
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <div className="modal-form-grupo">
             <label htmlFor="perfil-bio" className="modal-label">
@@ -1056,10 +1278,14 @@ export default function Profile() {
               id="perfil-bio"
               className="modal-textarea"
               placeholder={TEXTO_SOBRE_MIM_PLACEHOLDER}
+              maxLength={LIMITE_BIO}
               value={formPerfil.bio}
               onChange={(e) => setFormPerfil({ ...formPerfil, bio: e.target.value })}
             />
+            <p className="perfil-contador-caracteres">{formPerfil.bio.length}/{LIMITE_BIO}</p>
           </div>
+
+          {erroPerfil && <p className="perfil-erro" role="alert">{erroPerfil}</p>}
 
           <div className="modal-footer">
             <button

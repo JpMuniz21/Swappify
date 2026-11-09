@@ -10,9 +10,17 @@ usuários e os dois serviços envolvidos na troca.
 | --- | --- | --- |
 | GET | `/api/matches` | Lista os matches ativos da pessoa logada. |
 | GET | `/api/matches/{id}` | Exibe um match do qual a pessoa logada participa. |
+| POST | `/api/matches/{id}/cancelar` | Desfaz o match (status `cancelado`). Só participantes; 409 se já cancelado. |
 
 Ao criar um interesse, a resposta inclui `meta.match_criado` e `meta.match_id`. O
 frontend pode usar esses valores para mostrar o aviso de match e abrir a conversa.
+
+Um match cancelado some de `/api/matches` e do chat, mas o registro e as mensagens
+continuam no banco.
+
+> **Atenção:** remover um favorito (`DELETE /api/interesses/{id}`) apaga em cascata o
+> match que depende dele e as mensagens dessa conversa. `GET /api/interesses` informa
+> esse match em `match_id`, para o frontend avisar a pessoa antes de remover.
 
 ## Rotas de chat
 

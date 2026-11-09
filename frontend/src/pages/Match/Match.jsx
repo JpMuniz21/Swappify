@@ -1,120 +1,112 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import MatchCard from '../../components/MatchCard/MatchCard';
 import MatchAcoes from '../../components/MatchAcoes/MatchAcoes';
 import MatchOverlay from '../../components/MatchOverlay/MatchOverlay';
-import marcelaFoto from '../../assets/match_template.jpg';
+import { logout } from '../../services/authService';
+import { listarCatalogoServicos, listarFavoritos, favoritarServico } from '../../services/matchService';
 import './Match.css';
 
-// perfis mockados para demonstracao
-const PERFIS_MOCK = [
-  {
-    id: 'm1',
-    nome: 'Marcela Campos',
-    profissao: 'Fotografa',
-    localizacao: 'Fortaleza, CE',
-    bio: 'Apaixonada por fotografia e por transformar momentos em lembrancas especiais. Trabalho com ensaios, eventos e criacao de conteudo, sempre com criatividade e atencao aos detalhes.',
-    avaliacao: '4.8',
-    totalAvaliacoes: 15,
-    trocasRealizadas: 12,
-    taxaConclusao: '91%',
-    foto: marcelaFoto,
-  },
-  {
-    id: 'm2',
-    nome: 'Rafael Torres',
-    profissao: 'Designer UI/UX',
-    localizacao: 'Sao Paulo, SP',
-    bio: 'Designer apaixonado por criar experiencias digitais intuitivas e bonitas. Atuo com prototipacao, pesquisa de usabilidade e design systems.',
-    avaliacao: '4.9',
-    totalAvaliacoes: 28,
-    trocasRealizadas: 20,
-    taxaConclusao: '95%',
-    foto: null,
-  },
-  {
-    id: 'm3',
-    nome: 'Juliana Freitas',
-    profissao: 'Redatora & Copywriter',
-    localizacao: 'Recife, PE',
-    bio: 'Especialista em comunicacao e storytelling para marcas. Crio textos que conectam e convertem, do blog ao e-mail marketing.',
-    avaliacao: '4.7',
-    totalAvaliacoes: 19,
-    trocasRealizadas: 16,
-    taxaConclusao: '88%',
-    foto: null,
-  },
-  {
-    id: 'm4',
-    nome: 'Andre Moura',
-    profissao: 'Desenvolvedor Mobile',
-    localizacao: 'Belo Horizonte, MG',
-    bio: 'Desenvolvedor React Native com 4 anos de experiencia. Ja lancei mais de 10 apps na App Store e Google Play.',
-    avaliacao: '4.6',
-    totalAvaliacoes: 11,
-    trocasRealizadas: 8,
-    taxaConclusao: '85%',
-    foto: null,
-  },
-  {
-    id: 'm5',
-    nome: 'Fernanda Luz',
-    profissao: 'Especialista em Marketing',
-    localizacao: 'Curitiba, PR',
-    bio: 'Ajudo empresas a crescerem no digital com estrategias de trafego pago, SEO e gestao de redes sociais baseadas em dados.',
-    avaliacao: '5.0',
-    totalAvaliacoes: 34,
-    trocasRealizadas: 30,
-    taxaConclusao: '97%',
-    foto: null,
-  },
-];
+// Acima desse número de cards, o contador vira texto ("3 de 40") em vez de bolinhas.
+const MAX_BOLINHAS = 10;
 
-// probabilidade de dar match ao curtir (para demonstracao)
-const CHANCE_MATCH = 0.5;
+// Converte um serviço do catálogo (ServicoResource) para o formato do MatchCard.
+function paraPerfil(servico) {
+  const local = servico.usuario?.localizacao;
+  return {
+    id: servico.id,
+    servicoId: servico.id,
+    nome: servico.usuario?.name ?? 'Usuário',
+    profissao: servico.usuario?.profession || 'Membro Swappify',
+    localizacao: local ? [local.cidade, local.estado].filter(Boolean).join(', ') : '',
+    bio: servico.usuario?.bio || '',
+    servico: { titulo: servico.titulo, descricao: servico.descricao },
+    foto: null,
+  };
+}
 
 export default function Match() {
   const navigate = useNavigate();
-  const [perfis, setPerfis] = useState(PERFIS_MOCK);
+  const { usuario } = useOutletContext() ?? {};
+
+  const [perfis, setPerfis] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [curtindo, setCurtindo] = useState(false);
+
   const [indiceAtual, setIndiceAtual] = useState(0);
-  const [historico, setHistorico] = useState([]); // para o botao de voltar
-  const [animacao, setAnimacao] = useState(null); // 'like' | 'pass'
+  const [historico, setHistorico] = useState([]); // [{ indice, tipo: 'like' | 'pass' }]
+  const [animacao, setAnimacao] = useState(null); // 'like' | 'pass' | 'entrada'
   const [matchAtual, setMatchAtual] = useState(null); // perfil do match confirmado
 
+  // Mostra serviços de outras pessoas que ainda não foram favoritados.
+  useEffect(() => {
+    if (!usuario) return undefined;
+    let ativo = true;
+    Promise.all([listarCatalogoServicos(), listarFavoritos()])
+      .then(([catalogo, favoritos]) => {
+        if (!ativo) return;
+        const jaFavoritados = new Set(favoritos.map((f) => f.servico_id));
+        setPerfis(
+          catalogo
+            .filter((s) => s.usuario_id !== usuario.id && !jaFavoritados.has(s.id))
+            .map(paraPerfil)
+        );
+      })
+      .catch(() => { if (ativo) setErroCarregar('Não foi possível carregar os perfis. Tente novamente.'); })
+      .finally(() => { if (ativo) setCarregando(false); });
+    return () => { ativo = false; };
+  }, [usuario]);
+
   const perfilAtual = perfis[indiceAtual] ?? null;
-  const podevoltar = historico.length > 0;
+  // Curtir já salva o favorito no servidor, então só dá para voltar depois de "passar".
+  const podevoltar = historico.length > 0 && historico[historico.length - 1].tipo === 'pass';
   const semMaisPerfis = indiceAtual >= perfis.length;
 
   // avanca para o proximo perfil apos animacao
-  const avancar = useCallback((tipoAnimacao, perfilAnterior) => {
+  const avancar = useCallback((tipoAnimacao) => {
     setAnimacao(tipoAnimacao);
     setTimeout(() => {
-      setHistorico((h) => [...h, { indice: indiceAtual, perfil: perfilAnterior }]);
+      setHistorico((h) => [...h, { indice: indiceAtual, tipo: tipoAnimacao }]);
       setIndiceAtual((i) => i + 1);
       setAnimacao('entrada');
       setTimeout(() => setAnimacao(null), 400);
     }, 380);
   }, [indiceAtual]);
 
-  // curtiu: 50% de chance de mostrar o overlay de match
-  function handleLike() {
-    if (!perfilAtual) return;
-    const deuMatch = Math.random() < CHANCE_MATCH;
-    if (deuMatch) {
-      setMatchAtual(perfilAtual);
-    } else {
-      avancar('like', perfilAtual);
+  // curtir = favoritar o serviço; se for recíproco, a API cria o match
+  async function handleLike() {
+    if (!perfilAtual || curtindo) return;
+    setCurtindo(true);
+    setAviso('');
+    try {
+      const resposta = await favoritarServico(perfilAtual.servicoId);
+      if (resposta?.meta?.match_criado) {
+        setMatchAtual({ ...perfilAtual, matchId: resposta.meta.match_id });
+      } else {
+        avancar('like');
+      }
+    } catch (erro) {
+      if (erro.status === 401 || erro.status === 419) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      const primeiroErro = Object.values(erro.errors ?? {})[0]?.[0];
+      setAviso(primeiroErro ?? 'Não foi possível curtir agora. Tente novamente.');
+    } finally {
+      setCurtindo(false);
     }
   }
 
-  // passou: avanca sem match
+  // passou: avanca sem salvar nada
   function handlePass() {
     if (!perfilAtual) return;
-    avancar('pass', perfilAtual);
+    avancar('pass');
   }
 
-  // volta para o perfil anterior
+  // volta para o perfil anterior (só após "passar")
   function handleVoltar() {
     if (!podevoltar) return;
     const ultimo = historico[historico.length - 1];
@@ -126,20 +118,100 @@ export default function Match() {
 
   // fecha o overlay de match e avanca
   function handleFecharMatch() {
-    const perfilDoMatch = matchAtual;
     setMatchAtual(null);
-    avancar('like', perfilDoMatch);
+    avancar('like');
   }
 
-  // vai para o chat ao confirmar match
+  // vai para o chat ao confirmar match (o chat abre a conversa mais recente)
   function handleConversarMatch() {
     setMatchAtual(null);
     navigate('/chat');
   }
 
+  async function sair() {
+    try {
+      await logout();
+    } finally {
+      navigate('/login', { replace: true });
+    }
+  }
+
+  function renderEstado(titulo, texto, botao) {
+    return (
+      <div className="match-esgotado" role="status">
+        <div className="match-esgotado-icone" aria-hidden="true">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <h2 className="match-esgotado-titulo">{titulo}</h2>
+        <p className="match-esgotado-texto">{texto}</p>
+        {botao}
+      </div>
+    );
+  }
+
+  let conteudoCentral;
+  if (carregando) {
+    conteudoCentral = renderEstado('Carregando perfis…', 'Buscando serviços para você descobrir.');
+  } else if (erroCarregar) {
+    conteudoCentral = renderEstado('Algo deu errado', erroCarregar, (
+      <button type="button" className="match-esgotado-btn" onClick={() => window.location.reload()}>
+        Tentar novamente
+      </button>
+    ));
+  } else if (semMaisPerfis) {
+    conteudoCentral = renderEstado(
+      perfis.length ? 'Você viu todos os perfis!' : 'Nenhum perfil novo por aqui',
+      'Novos serviços aparecem conforme as pessoas se cadastram. Volte mais tarde ou veja seus favoritos.',
+      (
+        <button type="button" id="btn-match-explorar" className="match-esgotado-btn" onClick={() => navigate('/favoritos')}>
+          Ver favoritos
+        </button>
+      )
+    );
+  } else {
+    conteudoCentral = (
+      <>
+        {/* contador de perfis */}
+        {perfis.length <= MAX_BOLINHAS ? (
+          <div className="match-contador" aria-live="polite" aria-label={`Perfil ${indiceAtual + 1} de ${perfis.length}`}>
+            {perfis.map((perfil, i) => (
+              <span
+                key={perfil.id}
+                className={`match-contador-dot ${i === indiceAtual ? 'match-contador-dot--ativo' : i < indiceAtual ? 'match-contador-dot--visto' : ''}`}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="match-contador-texto" aria-live="polite">
+            {indiceAtual + 1} de {perfis.length}
+          </p>
+        )}
+
+        {/* card do perfil */}
+        <MatchCard perfil={perfilAtual} animacao={animacao} />
+
+        {aviso && <p className="match-aviso" role="alert">{aviso}</p>}
+
+        {/* acoes */}
+        <MatchAcoes
+          onVoltar={handleVoltar}
+          onPass={handlePass}
+          onLike={handleLike}
+          onConversar={() => navigate('/chat')}
+          podevoltar={podevoltar}
+        />
+      </>
+    );
+  }
+
+  const acoesBloqueadas = carregando || Boolean(erroCarregar) || semMaisPerfis || curtindo;
+
   return (
     <div className="match-pagina">
-      <Navbar />
+      <Navbar usuario={usuario} onLogout={sair} onEditProfile={() => navigate('/perfil')} />
 
       <main className="match-main" id="main-content">
         <div className="match-container">
@@ -150,7 +222,7 @@ export default function Match() {
             id="btn-match-nav-anterior"
             className="match-nav-btn match-nav-btn--esquerda"
             onClick={handlePass}
-            disabled={semMaisPerfis}
+            disabled={acoesBloqueadas}
             aria-label="Passar perfil"
             title="Passar"
           >
@@ -161,51 +233,7 @@ export default function Match() {
 
           {/* area central: card + acoes */}
           <div className="match-central">
-            {semMaisPerfis ? (
-              /* estado: sem mais perfis */
-              <div className="match-esgotado" role="status">
-                <div className="match-esgotado-icone" aria-hidden="true">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                </div>
-                <h2 className="match-esgotado-titulo">Voce viu todos os perfis!</h2>
-                <p className="match-esgotado-texto">Novos perfis aparecerao em breve. Volte mais tarde ou explore os favoritos.</p>
-                <button
-                  type="button"
-                  id="btn-match-explorar"
-                  className="match-esgotado-btn"
-                  onClick={() => navigate('/favoritos')}
-                >
-                  Ver favoritos
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* contador de perfis */}
-                <div className="match-contador" aria-live="polite" aria-label={`Perfil ${indiceAtual + 1} de ${perfis.length}`}>
-                  {Array.from({ length: perfis.length }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`match-contador-dot ${i === indiceAtual ? 'match-contador-dot--ativo' : i < indiceAtual ? 'match-contador-dot--visto' : ''}`}
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
-
-                {/* card do perfil */}
-                <MatchCard perfil={perfilAtual} animacao={animacao} />
-
-                {/* acoes */}
-                <MatchAcoes
-                  onVoltar={handleVoltar}
-                  onPass={handlePass}
-                  onLike={handleLike}
-                  onConversar={() => navigate('/chat')}
-                  podevoltar={podevoltar}
-                />
-              </>
-            )}
+            {conteudoCentral}
           </div>
 
           {/* seta de navegacao direita */}
@@ -214,7 +242,7 @@ export default function Match() {
             id="btn-match-nav-proximo"
             className="match-nav-btn match-nav-btn--direita"
             onClick={handleLike}
-            disabled={semMaisPerfis}
+            disabled={acoesBloqueadas}
             aria-label="Curtir perfil"
             title="Curtir"
           >
