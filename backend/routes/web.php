@@ -2,10 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => response()->json([
-    'service' => 'Swappify API',
-    'health' => '/api/health',
-]));
+// A rota "/" e as páginas do React ficam em routes/spa.php.
 
 // Carrega o CRUD com a sessão e a proteção CSRF do grupo web.
 require __DIR__.'/account.php';

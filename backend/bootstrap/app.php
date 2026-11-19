@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        // Páginas do React (produção): sem middleware de sessão. Ver routes/spa.php.
+        then: function (): void {
+            Illuminate\Support\Facades\Route::group([], __DIR__.'/../routes/spa.php');
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Em produção a API fica atrás dos proxies do Render/Vercel, que terminam o HTTPS.
