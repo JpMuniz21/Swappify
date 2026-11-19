@@ -1,0 +1,62 @@
+.em-dev-page {
+  min-height: 100vh;
+  background: #f7f5ff;
+  color: #26212b;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.em-dev-card {
+  max-width: 520px;
+  margin: 64px auto;
+  padding: 40px 32px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.em-dev-selo {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eee4f7;
+  color: var(--roxo-escuro);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.em-dev-card h1 {
+  margin: 16px 0 8px;
+  color: var(--roxo-escuro);
+  font-size: 24px;
+}
+
+.em-dev-card p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.em-dev-aviso {
+  color: #6b6470;
+  font-size: 14px;
+}
+
+.em-dev-voltar {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: var(--roxo-escuro);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .em-dev-card {
+    margin: 24px 16px;
+    padding: 28px 20px;
+  }
+}

@@ -1,0 +1,168 @@
+.auth {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    min-height: 100vh;
+    background: var(--roxo-escuro);
+}
+
+/* ---------- painel roxo ---------- */
+.auth-painel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 48px 40px;
+    background: url('../../assets/fundo-circulos.svg') center / cover no-repeat;
+    color: #fff;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    text-align: center;
+}
+
+.auth-slogan {
+    max-width: 600px;
+    margin: 0;
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
+    line-height: 1.3;
+}
+
+.auth-colagem {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    aspect-ratio: 620 / 400;
+    margin: 24px 0;
+}
+
+.colagem-foto {
+    position: absolute;
+    height: auto;
+}
+
+.colagem-esquerda {
+    left: 0;
+    top: 12%;
+    width: 36%;
+    z-index: 1;
+}
+
+.colagem-centro {
+    left: 29%;
+    top: 0;
+    width: 40%;
+    z-index: 2;
+}
+
+.colagem-direita {
+    left: 57%;
+    top: 6%;
+    width: 42%;
+    z-index: 1;
+}
+
+/* ---------- adesivos  ---------- */
+.adesivo {
+    position: absolute;
+    height: auto;
+    z-index: 10;
+}
+
+.adesivo-x {
+    left: 15%;
+    top: 1%;
+    width: 18%;
+}
+
+.adesivo-estrela-a {
+    left: 80%;
+    top: 0;
+    width: 7%;
+    rotate: -36deg;
+}
+
+.adesivo-estrela-b {
+    left: 91%;
+    top: 3%;
+    width: 7%;
+    rotate: 45deg;
+}
+
+.adesivo-estrela-c {
+    left: 98%;
+    top: 17%;
+    width: 7%;
+}
+
+.adesivo-balao {
+    left: 62%;
+    top: 45%;
+    width: 11%;
+}
+
+.adesivo-coracao {
+    left: 82%;
+    top: 70%;
+    width: 20%;
+}
+
+.adesivo-seta {
+    left: 26%;
+    top: 65%;
+    width: 12%;
+    rotate: 20deg;
+}
+
+.auth-slogan-final {
+    margin: 0;
+    font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+}
+
+.auth-slogan-final span {
+    color: var(--roxo-claro);
+}
+
+/* ---------- painel do formulário ---------- */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 48px clamp(24px, 5vw, 64px);
+    background: var(--fundo-form);
+    border-top-left-radius: 100px 100%;
+}
+
+.auth-marca {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-logo {
+    width: 180px;
+    max-width: 60%;
+}
+
+.auth-nome {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    color: var(--roxo-escuro);
+}
+
+/* ---------- mobile: some o painel roxo ---------- */
+@media (max-width: 800px) {
+    .auth {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-painel {
+        display: none;
+    }
+
+    .auth-form {
+        border-radius: 0;
+    }
+}

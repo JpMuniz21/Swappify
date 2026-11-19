@@ -1,0 +1,71 @@
+/* Barra de filtros (tabs/pills) das trocas */
+
+.trocas-filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.trocas-filtro-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1.5px solid #dcd7e3;
+  background: #ffffff;
+  color: #554e60;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  user-select: none;
+}
+
+.trocas-filtro-btn:hover {
+  background: #f4ecfb;
+  border-color: #b884d6;
+  color: #3f2650;
+}
+
+.trocas-filtro-btn--ativo {
+  background: #6b35a8;
+  border-color: #6b35a8;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(107, 53, 168, 0.25);
+}
+
+.trocas-filtro-btn--ativo:hover {
+  background: #5a2b8e;
+  border-color: #5a2b8e;
+  color: #ffffff;
+}
+
+.trocas-filtro-badge {
+  font-size: 0.75rem;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-weight: 600;
+}
+
+.trocas-filtro-btn--ativo .trocas-filtro-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .trocas-filtros {
+    gap: 8px;
+  }
+
+  .trocas-filtro-btn {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+  }
+}
+

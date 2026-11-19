@@ -1,0 +1,256 @@
+/* Modal de Detalhes e Avaliação de Trocas */
+
+.troca-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 40, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.troca-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: trocaModalEntrada 0.2s ease-out;
+}
+
+@keyframes trocaModalEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.troca-modal-cabecalho {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee8f5;
+}
+
+.troca-modal-titulo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.troca-modal-titulo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0;
+}
+
+.troca-modal-subtitulo {
+  font-size: 0.8rem;
+  color: #796e85;
+}
+
+.troca-modal-fechar {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #8b8396;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.18s;
+}
+
+.troca-modal-fechar:hover {
+  background: #f4ecfb;
+  color: #3f2650;
+}
+
+.troca-modal-corpo {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.troca-modal-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.troca-modal-rotulo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #887e96;
+  letter-spacing: 0.5px;
+}
+
+.troca-modal-acordo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c2336;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.troca-modal-descricao {
+  font-size: 0.85rem;
+  color: #554e60;
+  margin: 0;
+  line-height: 1.5;
+  background: #faf8fc;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f0e9f7;
+}
+
+.troca-modal-grid-dados {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+  background: #fbf9fd;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #eee8f5;
+}
+
+.troca-modal-valor {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2c2336;
+  margin: 2px 0 0;
+}
+
+/* Área de Avaliação */
+.troca-modal-avaliar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.troca-modal-avaliar-texto {
+  font-size: 0.95rem;
+  color: #3f2650;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.troca-modal-estrelas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.troca-modal-estrela-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #d1c8db;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px;
+  transition: transform 0.15s, color 0.15s;
+}
+
+.troca-modal-estrela-btn:hover,
+.troca-modal-estrela-btn--ativa {
+  color: #fbbd08;
+}
+
+.troca-modal-estrela-btn:hover {
+  transform: scale(1.15);
+}
+
+.troca-modal-nota-texto {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #78350f;
+  margin-left: 8px;
+}
+
+.troca-modal-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3f2650;
+}
+
+.troca-modal-textarea {
+  width: 100%;
+  border: 1.5px solid #dcd7e3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.troca-modal-textarea:focus {
+  border-color: #6b35a8;
+}
+
+/* Rodapé */
+.troca-modal-rodape {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #eee8f5;
+  background: #faf8fc;
+}
+
+.troca-modal-btn-voltar {
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1.5px solid #dcd7e3;
+  background: #ffffff;
+  color: #554e60;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+}
+
+.troca-modal-btn-voltar:hover {
+  background: #f7f3fb;
+  color: #2c2336;
+}
+
+.troca-modal-btn-confirmar {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: #6b35a8;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s;
+}
+
+.troca-modal-btn-confirmar:hover {
+  background: #5a2b8e;
+}
+

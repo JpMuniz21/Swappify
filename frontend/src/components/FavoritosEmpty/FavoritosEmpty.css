@@ -1,0 +1,69 @@
+﻿/* Estado vazio dos favoritos */
+
+.fav-empty {
+  background: linear-gradient(135deg, #f5f0fc, #ede8f8);
+  border-radius: 20px;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.fav-empty-icone {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(107, 53, 168, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b35a8;
+  flex-shrink: 0;
+}
+
+.fav-empty-texto {
+  flex: 1;
+  min-width: 180px;
+}
+
+.fav-empty-titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 4px;
+}
+
+.fav-empty-descricao {
+  font-size: 0.82rem;
+  color: #726c7c;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.fav-empty-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #6b35a8;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.fav-empty-btn:hover {
+  background: #5a2b8e;
+  transform: translateY(-1px);
+}
+
+.fav-empty-btn:active {
+  transform: translateY(0);
+}

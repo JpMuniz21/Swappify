@@ -1,0 +1,101 @@
+/* Estado vazio de Minhas Trocas */
+
+.trocas-empty {
+  background: linear-gradient(135deg, #f5f0fc, #ede8f8);
+  border-radius: 20px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  border: 1px solid #e7def2;
+}
+
+.trocas-empty-icone {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(107, 53, 168, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b35a8;
+  flex-shrink: 0;
+}
+
+.trocas-empty-texto {
+  flex: 1;
+  min-width: 220px;
+}
+
+.trocas-empty-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 4px;
+}
+
+.trocas-empty-descricao {
+  font-size: 0.84rem;
+  color: #726c7c;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.trocas-empty-botoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trocas-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  background: #6b35a8;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.trocas-empty-btn:hover {
+  background: #5a2b8e;
+  transform: translateY(-1px);
+}
+
+.trocas-empty-btn--limpar {
+  background: #ffffff;
+  color: #6b35a8;
+  border: 1.5px solid #d8c8ed;
+}
+
+.trocas-empty-btn--limpar:hover {
+  background: #f7f3fb;
+  border-color: #6b35a8;
+}
+
+@media (max-width: 640px) {
+  .trocas-empty {
+    padding: 20px 18px;
+    gap: 16px;
+  }
+
+  .trocas-empty-botoes {
+    width: 100%;
+  }
+
+  .trocas-empty-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+

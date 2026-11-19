@@ -1,0 +1,12 @@
+# Arquivos que NÃO entram na imagem de produção (Dockerfile da raiz).
+.git
+**/.env
+**/node_modules
+frontend/dist
+backend/vendor
+backend/storage/logs/*
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*.php
+backend/database/*.sqlite

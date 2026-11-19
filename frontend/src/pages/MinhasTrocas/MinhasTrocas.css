@@ -1,0 +1,317 @@
+/* Página Minhas Trocas */
+
+.minhas-trocas-pagina {
+  min-height: 100vh;
+  background-color: #f7f5ff;
+  display: flex;
+  flex-direction: column;
+  color: #26212b;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Layout principal com Sidebar fixa/alinhada e Conteúdo Central */
+.minhas-trocas-layout {
+  display: flex;
+  flex: 1;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Área central de conteúdo */
+.minhas-trocas-main {
+  flex: 1;
+  padding: 32px 36px 64px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.minhas-trocas-container {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* Cabeçalho da página */
+.minhas-trocas-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.minhas-trocas-titulo-grupo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.minhas-trocas-icone-topo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ede4f8, #ddd0f2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b35a8;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(107, 53, 168, 0.15);
+}
+
+.minhas-trocas-titulo {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #2c2336;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.minhas-trocas-subtitulo {
+  font-size: 0.88rem;
+  color: #726c7c;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Botão de Nova Troca / Explorar */
+.minhas-trocas-btn-explorar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #6b35a8;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(107, 53, 168, 0.2);
+}
+
+.minhas-trocas-btn-explorar:hover {
+  background: #5a2b8e;
+  transform: translateY(-1px);
+}
+
+/* Banner de Aviso / Notificação de Ação */
+.minhas-trocas-aviso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #ede6f7;
+  border: 1px solid #d8c6ed;
+  border-radius: 12px;
+  color: #431f6d;
+  font-size: 0.88rem;
+  font-weight: 500;
+  animation: trocasFadeIn 0.25s ease-out;
+}
+
+@keyframes trocasFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.minhas-trocas-aviso-texto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.minhas-trocas-aviso-fechar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: #6b35a8;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.minhas-trocas-aviso-fechar:hover {
+  background: rgba(107, 53, 168, 0.1);
+}
+
+/* Barra de Ferramentas: Busca + Botão Filtrar Por */
+.minhas-trocas-toolbar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+}
+
+.minhas-trocas-busca-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.minhas-trocas-busca-icone {
+  position: absolute;
+  left: 16px;
+  color: #8c8894;
+  pointer-events: none;
+}
+
+.minhas-trocas-busca-input {
+  width: 100%;
+  padding: 12px 42px 12px 46px;
+  border-radius: 9999px;
+  border: 1.5px solid #dcd7e3;
+  background: #ffffff;
+  color: #2c2336;
+  font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.minhas-trocas-busca-input::placeholder {
+  color: #938c9e;
+}
+
+.minhas-trocas-busca-input:focus {
+  border-color: #6b35a8;
+  box-shadow: 0 0 0 3px rgba(107, 53, 168, 0.12);
+}
+
+.minhas-trocas-busca-limpar {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #8c8894;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.minhas-trocas-busca-limpar:hover {
+  color: #2c2336;
+}
+
+/* Botão Filtrar Por com Dropdown */
+.minhas-trocas-ordenar-container {
+  position: relative;
+}
+
+.minhas-trocas-btn-filtrar-por {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: #ffffff;
+  border: 1.5px solid #dcd7e3;
+  border-radius: 9999px;
+  color: #3f2650;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.minhas-trocas-btn-filtrar-por:hover {
+  background: #f7f3fc;
+  border-color: #b884d6;
+}
+
+.minhas-trocas-dropdown-ordenar {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #ebe6f2;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 50;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.minhas-trocas-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #4b4255;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.minhas-trocas-dropdown-item:hover {
+  background: #f4ecfb;
+  color: #6b35a8;
+}
+
+.minhas-trocas-dropdown-item--ativo {
+  background: #f1e9fa;
+  color: #6b35a8;
+  font-weight: 600;
+}
+
+/* Lista / Grid de Trocas */
+.minhas-trocas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .minhas-trocas-main {
+    padding: 24px 20px 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .minhas-trocas-layout {
+    flex-direction: column;
+  }
+
+  .minhas-trocas-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .minhas-trocas-btn-filtrar-por {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .minhas-trocas-dropdown-ordenar {
+    right: 0;
+    left: 0;
+  }
+}
+

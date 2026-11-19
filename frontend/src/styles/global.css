@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400&family=Montserrat:wght@400;500&display=swap');
+
+:root {
+    --roxo-escuro: #3f2650;
+    --roxo-claro: #b884d6;
+    --fundo-form: #e8e6e9;
+    --borda-input: #b5b1b8;
+    --texto-suave: #5f5a66;
+}
+
+html, body, #root {
+    height: 100%;
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+}

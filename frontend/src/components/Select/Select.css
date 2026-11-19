@@ -1,0 +1,109 @@
+.campo-custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.campo-caixa--custom {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    padding: 0 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.select-valor {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--roxo-escuro, #3b1754);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.select-valor--placeholder {
+    color: var(--texto-suave, #9ca3af);
+}
+
+/* Seta animada: gira quando abre */
+.campo-seta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--roxo-escuro, #3b1754);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 6px;
+}
+
+.campo-seta--aberto {
+    transform: rotate(180deg);
+}
+
+/* Menu Dropdown: sempre para baixo e com altura máxima */
+.select-lista {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    /* Limita a altura para não vazar a tela */
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    z-index: 100;
+    /* Garante que fique acima de tudo */
+    box-sizing: border-box;
+}
+
+/* Estilo de cada linha */
+.select-item {
+    padding: 10px 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #2b2b2b;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.select-item:hover {
+    background-color: #f3eef7;
+    color: var(--roxo-escuro, #3b1754);
+}
+
+.select-item--ativo {
+    background-color: #ebe4f3;
+    color: var(--roxo-escuro, #3b1754);
+    font-weight: 600;
+}
+
+/* Scrollbar fina e bonita para a lista */
+.select-lista::-webkit-scrollbar {
+    width: 5px;
+}
+
+.select-lista::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.select-lista::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.select-lista::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}

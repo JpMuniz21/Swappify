@@ -1,0 +1,68 @@
+﻿/* Barra de acoes do match */
+
+.match-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 8px 0;
+}
+
+.match-acao-btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, opacity 0.2s;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(63, 38, 80, 0.12);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.match-acao-btn:hover:not(:disabled) {
+  transform: scale(1.12);
+  box-shadow: 0 6px 20px rgba(63, 38, 80, 0.2);
+}
+
+.match-acao-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.match-acao-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* tamanhos diferenciados por importancia */
+.match-acao-btn--voltar {
+  width: 46px;
+  height: 46px;
+  color: #f5a623;
+}
+
+.match-acao-btn--pass {
+  width: 58px;
+  height: 58px;
+}
+
+.match-acao-btn--like {
+  width: 68px;
+  height: 68px;
+  box-shadow: 0 6px 22px rgba(107, 53, 168, 0.22);
+}
+
+.match-acao-btn--conversar {
+  width: 58px;
+  height: 58px;
+}
+
+/* adesivos nos botoes */
+.match-acao-adesivo {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  display: block;
+}

@@ -1,0 +1,75 @@
+.campo {
+    width: 100%;
+}
+
+/* label escondida visualmente (o Figma usa só placeholder), mas lida por leitores de tela */
+.campo-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.campo-caixa {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 14px;
+    border: 2px solid var(--borda-input);
+    border-radius: 8px;
+    background: transparent;
+}
+
+.campo-caixa:focus-within {
+    border-color: var(--roxo-escuro);
+}
+
+.campo-caixa--erro {
+    border-color: #c0392b;
+}
+
+.campo-icone {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    color: var(--texto-suave);
+}
+
+.campo-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: 500 0.85rem 'Montserrat', sans-serif;
+    color: var(--roxo-escuro);
+}
+
+.campo-input::placeholder {
+    color: var(--texto-suave);
+}
+
+.campo-olho {
+    display: flex;
+    align-items: center;
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--roxo-escuro);
+    transition: filter 0.2s ease;
+}
+
+.campo-olho:hover {
+    filter: brightness(0.7);
+}
+
+.campo-erro {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: #c0392b;
+}

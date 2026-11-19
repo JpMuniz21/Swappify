@@ -1,0 +1,20 @@
+.rota-protegida {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #f7f5ff;
+  color: var(--roxo-escuro);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.rota-protegida button {
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  background: var(--roxo-escuro);
+  color: #fff;
+  cursor: pointer;
+}

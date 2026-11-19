@@ -1,0 +1,132 @@
+/* Área de Métricas de Minhas Trocas */
+
+.trocas-metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  width: 100%;
+}
+
+.trocas-metrica-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #eee8f5;
+  box-shadow: 0 4px 16px rgba(63, 38, 80, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trocas-metrica-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(63, 38, 80, 0.08);
+}
+
+.trocas-metrica-icone {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Cores específicas de cada indicador */
+
+/* 1. Ativas - Lilás */
+.trocas-metrica-card--ativas .trocas-metrica-icone {
+  background: #f1e9fa;
+  color: #6b35a8;
+}
+
+.trocas-metrica-card--ativas .trocas-metrica-valor {
+  color: #6b35a8;
+}
+
+/* 2. Aguardando Resposta - Âmbar / Amarelo */
+.trocas-metrica-card--aguardando .trocas-metrica-icone {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.trocas-metrica-card--aguardando .trocas-metrica-valor {
+  color: #d97706;
+}
+
+/* 3. Concluídas - Verde */
+.trocas-metrica-card--concluidas .trocas-metrica-icone {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.trocas-metrica-card--concluidas .trocas-metrica-valor {
+  color: #16a34a;
+}
+
+.trocas-metrica-conteudo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trocas-metrica-valor {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-family: inherit;
+}
+
+.trocas-metrica-titulo {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #2c2336;
+  margin: 3px 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trocas-metrica-subtitulo {
+  font-size: 0.72rem;
+  color: #7b7585;
+}
+
+@media (max-width: 900px) {
+  .trocas-metricas-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .trocas-metrica-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .trocas-metrica-icone {
+    width: 44px;
+    height: 44px;
+  }
+
+  .trocas-metrica-valor {
+    font-size: 1.5rem;
+  }
+
+  .trocas-metrica-titulo {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .trocas-metricas-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .trocas-metrica-card {
+    padding: 14px 16px;
+  }
+}
+

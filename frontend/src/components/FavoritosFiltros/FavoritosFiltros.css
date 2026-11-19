@@ -1,0 +1,39 @@
+﻿/* Barra de filtros de favoritos */
+
+.fav-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fav-filtro-btn {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  border: 1.5px solid #dcd7e3;
+  background: transparent;
+  color: #554e60;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+}
+
+.fav-filtro-btn:hover {
+  background: #f2ebfb;
+  border-color: #b884d6;
+  color: #3f2650;
+}
+
+.fav-filtro-btn--ativo {
+  background: #6b35a8;
+  border-color: #6b35a8;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.fav-filtro-btn--ativo:hover {
+  background: #5a2b8e;
+  border-color: #5a2b8e;
+  color: #ffffff;
+}

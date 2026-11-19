@@ -1,0 +1,53 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "8080:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+      - ./frontend/eslint.config.js:/app/eslint.config.js
+    init: true
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    command: ["sh", "/var/www/html/docker-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/api/health') === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      # Sem isso o "artisan serve" atende uma requisição por vez e as telas que
+      # pedem várias coisas ao mesmo tempo ficam numa fila.
+      # (exige o --no-reload no docker-entrypoint.sh; mudanças no .env pedem restart do container)
+      PHP_CLI_SERVER_WORKERS: 4
+      # Reaproveita a conexão com o Supabase entre requisições (ver config/database.php).
+      DB_PERSISTENT: "true"
+    volumes:
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+    init: true
+    restart: unless-stopped
+
+volumes:
+  backend_vendor:

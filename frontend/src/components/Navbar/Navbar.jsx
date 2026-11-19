@@ -1,0 +1,277 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import logo from '../../assets/logo-swappify.svg';
+import defaultAvatar from '../../assets/avatar-padrao.svg';
+import NotificacoesModal from '../NotificacoesModal/NotificacoesModal';
+import { listarNotificacoes, lerIdsLidos, salvarIdsLidos } from '../../services/notificacaoService';
+import './Navbar.css';
+
+export default function Navbar({ usuario, onLogout, onEditProfile }) {
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuRef = useRef(null);
+
+  const [notifAberto, setNotifAberto] = useState(false);
+  const [notificacoes, setNotificacoes] = useState([]);
+  const [lidas, setLidas] = useState(() => lerIdsLidos());
+  const [notifCarregando, setNotifCarregando] = useState(true);
+  const [notifErro, setNotifErro] = useState(false);
+
+  const carregarNotificacoes = useCallback(async () => {
+    setNotifCarregando(true);
+    setNotifErro(false);
+    try {
+      setNotificacoes(await listarNotificacoes());
+    } catch {
+      setNotifErro(true);
+    } finally {
+      setNotifCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregarNotificacoes();
+  }, [carregarNotificacoes]);
+
+  function marcarLida(id) {
+    setLidas((atual) => {
+      const novo = new Set(atual).add(id);
+      salvarIdsLidos(novo);
+      return novo;
+    });
+  }
+
+  function marcarTodasLidas() {
+    const novo = new Set([...lidas, ...notificacoes.map((n) => n.id)]);
+    salvarIdsLidos(novo);
+    setLidas(novo);
+  }
+
+  function abrirNotificacoes() {
+    setNotifAberto(true);
+    carregarNotificacoes(); // atualiza a lista sempre que o modal abre
+  }
+
+  const naoLidas = notificacoes.filter((n) => !lidas.has(n.id)).length;
+
+  // fecha o menu ao clicar fora dele
+  useEffect(() => {
+    function handleClickFora(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuAberto(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickFora);
+    return () => document.removeEventListener('mousedown', handleClickFora);
+  }, []);
+
+ const primeiroNome = usuario?.name ? usuario.name.trim().split(' ')[0] : 'Perfil';
+  const avatarUrl = usuario?.avatar_url || defaultAvatar;
+
+  return (
+    <header className="navbar" role="banner">
+      <Link to="/feed" className="navbar-logo-link" aria-label="Swappify Página Inicial">
+        <img src={logo} alt="Logo Swappify" className="navbar-logo-img" />
+        <span className="navbar-logo-text">Swappify</span>
+      </Link>
+
+      <div className="navbar-search-container">
+        <input
+          type="search"
+          className="navbar-search-input"
+          placeholder="Buscar por serviço ou nome"
+          aria-label="Buscar serviços ou profissionais"
+        />
+        <svg
+          className="navbar-search-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </div>
+
+      <div className="navbar-actions">
+          {/* icone de mensagens */}
+        <Link
+          to="/chat"
+          className="navbar-icon-btn"
+          aria-label="Mensagens"
+          title="Mensagens"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </Link>
+
+        {/* icone de favoritos */}
+        <Link
+          to="/favoritos"
+          className="navbar-icon-btn"
+          aria-label="Favoritos"
+          title="Favoritos"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </Link>
+
+        {/* icone de match */}
+        <Link
+          to="/match"
+          className="navbar-icon-btn"
+          aria-label="Match"
+          title="Match"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </Link>
+
+        {/* icone de notificacoes */}
+        <button
+          type="button"
+          className="navbar-icon-btn navbar-notif-btn"
+          aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
+          title="Notificações"
+          onClick={abrirNotificacoes}
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {naoLidas > 0 && (
+            <span className="navbar-notif-badge" aria-hidden="true">
+              {naoLidas > 9 ? '9+' : naoLidas}
+            </span>
+          )}
+        </button>
+
+        <div className="navbar-divider" aria-hidden="true" />
+
+        {/* perfil do usuario e menu suspenso */}
+        <div className="navbar-user-wrapper" ref={menuRef}>
+          <button
+            type="button"
+            className="navbar-user-btn"
+            onClick={() => setMenuAberto(!menuAberto)}
+            aria-expanded={menuAberto}
+            aria-haspopup="true"
+            aria-label="Menu do usuário"
+          >
+            <div className="navbar-user-avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={primeiroNome} />
+              ) : (
+                <svg
+                  className="navbar-user-avatar-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              )}
+            </div>
+            <span className="navbar-user-name">{primeiroNome}</span>
+          </button>
+
+          {menuAberto && (
+            <div className="navbar-dropdown" role="menu">
+              {onEditProfile && (
+                <button
+                  type="button"
+                  className="navbar-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAberto(false);
+                    onEditProfile();
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                  Editar perfil
+                </button>
+              )}
+              <button
+                type="button"
+                className="navbar-dropdown-item danger"
+                role="menuitem"
+                onClick={() => {
+                  setMenuAberto(false);
+                  if (onLogout) onLogout();
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Sair
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <NotificacoesModal
+        isOpen={notifAberto}
+        onClose={() => setNotifAberto(false)}
+        notificacoes={notificacoes}
+        lidas={lidas}
+        carregando={notifCarregando && notificacoes.length === 0}
+        erro={notifErro}
+        onMarcarLida={marcarLida}
+        onMarcarTodasLidas={marcarTodasLidas}
+        onTentarNovamente={carregarNotificacoes}
+      />
+    </header>
+  );
+}

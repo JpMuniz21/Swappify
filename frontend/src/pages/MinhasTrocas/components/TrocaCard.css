@@ -1,0 +1,453 @@
+/* Card Horizontal de Troca */
+
+.troca-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #ebe6f2;
+  box-shadow: 0 4px 16px rgba(63, 38, 80, 0.04);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.troca-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(63, 38, 80, 0.08);
+}
+
+/* Topo / Cabeçalho do Card */
+.troca-card-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f2edf7;
+}
+
+.troca-card-status-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Badges de Status */
+.troca-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.troca-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.troca-badge-icon {
+  margin-left: -2px;
+}
+
+/* Em andamento (lilás/cinza) */
+.troca-badge--em-andamento {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
+}
+
+/* Aguardando você (amarelo) */
+.troca-badge--aguardando {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Concluída (verde) */
+.troca-badge--concluida {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* Cancelada */
+.troca-badge--cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.troca-card-prazo,
+.troca-card-data-conclusao {
+  font-size: 0.78rem;
+  color: #7b7585;
+}
+
+.troca-card-data-inicio {
+  font-size: 0.75rem;
+  color: #96909e;
+}
+
+/* Seção de Negociação (Você <-> Conector <-> Parceiro) */
+.troca-card-negociacao {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 0;
+}
+
+.troca-lado {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.troca-lado--voce {
+  justify-content: flex-start;
+}
+
+.troca-lado--parceiro {
+  justify-content: flex-end;
+  text-align: right;
+  flex-direction: row-reverse;
+}
+
+.troca-avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.troca-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e8e0f2;
+  background: #f7f3fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.troca-avatar--voce {
+  border-color: #c9b1e8;
+}
+
+.troca-avatar--placeholder {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #6b35a8;
+  background: linear-gradient(135deg, #ede4f8, #ddd0f2);
+}
+
+.troca-voce-tag {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3f2650;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.troca-lado-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.troca-lado-nome-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.troca-lado--parceiro .troca-lado-nome-linha {
+  justify-content: flex-end;
+}
+
+.troca-lado-nome {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c2336;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.troca-parceiro-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #78350f;
+  background: #fef3c7;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+/* Tag estilizada dos serviços */
+.troca-servico-tag-wrapper {
+  display: flex;
+}
+
+.troca-lado--parceiro .troca-servico-tag-wrapper {
+  justify-content: flex-end;
+}
+
+.troca-servico-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.troca-servico-tag--voce {
+  background: #f0e9f8;
+  color: #582b8a;
+  border: 1px solid #dfd3ee;
+}
+
+.troca-servico-tag--parceiro {
+  background: #ebf4ff;
+  color: #1e40af;
+  border: 1px solid #dbeafe;
+}
+
+/* Conector central */
+.troca-conector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.troca-conector-linha {
+  width: 24px;
+  height: 1px;
+  background: #d8cfe2;
+}
+
+.troca-conector-icone {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3ebfa, #e6d8f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b35a8;
+  box-shadow: 0 2px 6px rgba(107, 53, 168, 0.12);
+}
+
+/* Resumo do Acordo */
+.troca-acordo-box {
+  background: #f8f6fc;
+  border-radius: 12px;
+  border: 1px solid #eee7f5;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.troca-acordo-icone {
+  color: #6b35a8;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.troca-acordo-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.troca-acordo-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #796e85;
+  letter-spacing: 0.4px;
+}
+
+.troca-acordo-texto {
+  font-size: 0.88rem;
+  color: #2c2336;
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* Rodapé: Botões de Ação */
+.troca-card-rodape {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.troca-card-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Estilos de botões */
+.troca-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+/* 1. Botão Conversar (Chat) */
+.troca-btn--chat {
+  background: #f4edf9;
+  color: #6b35a8;
+  border: 1px solid #dfd1ee;
+}
+
+.troca-btn--chat:hover {
+  background: #ebddf5;
+  border-color: #b884d6;
+  color: #4a1d7c;
+}
+
+/* 2. Botão Secundário (Ver detalhes / Ver proposta / Ver histórico) */
+.troca-btn--secundario {
+  background: #ffffff;
+  color: #4b4255;
+  border: 1.5px solid #dcd7e3;
+}
+
+.troca-btn--secundario:hover {
+  background: #fbf9fd;
+  border-color: #b884d6;
+  color: #2c2336;
+}
+
+/* 3. Botão Marcar como Concluída */
+.troca-btn--concluir {
+  background: #6b35a8;
+  color: #ffffff;
+  border: 1.5px solid #6b35a8;
+}
+
+.troca-btn--concluir:hover {
+  background: #5a2b8e;
+  border-color: #5a2b8e;
+}
+
+/* 4. Botão Aceitar */
+.troca-btn--aceitar {
+  background: #16a34a;
+  color: #ffffff;
+  border: 1.5px solid #16a34a;
+}
+
+.troca-btn--aceitar:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+/* 5. Botão Recusar */
+.troca-btn--recusar {
+  background: #ffffff;
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+}
+
+.troca-btn--recusar:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+/* 6. Botão Avaliar Troca */
+.troca-btn--avaliar {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1.5px solid #fde68a;
+}
+
+.troca-btn--avaliar:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .troca-card {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+
+  .troca-card-negociacao {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .troca-lado--parceiro {
+    justify-content: flex-start;
+    text-align: left;
+    flex-direction: row;
+  }
+
+  .troca-lado--parceiro .troca-lado-nome-linha {
+    justify-content: flex-start;
+  }
+
+  .troca-lado--parceiro .troca-servico-tag-wrapper {
+    justify-content: flex-start;
+  }
+
+  .troca-conector {
+    justify-content: center;
+  }
+
+  .troca-conector-linha {
+    flex: 1;
+  }
+
+  .troca-card-acoes {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .troca-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
