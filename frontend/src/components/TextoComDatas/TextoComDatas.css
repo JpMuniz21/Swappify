@@ -1,0 +1,11 @@
+.texto-data {
+  color: var(--roxo-escuro, #563668);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.texto-data:hover {
+  color: var(--roxo-medio, #8c5fa8);
+}
