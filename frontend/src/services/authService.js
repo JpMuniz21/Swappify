@@ -1,15 +1,14 @@
-// FRONTEND: configurar VITE_API_URL no Vite/Compose; manter /api no endereço.
 const API_URL = import.meta.env?.VITE_API_URL ?? "http://localhost:8000/api";
 
 async function lerResposta(resposta) {
-  if (resposta.status === 204) return null; // Logout/exclusão não retornam corpo.
+  if (resposta.status === 204) return null;
   const corpo = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
     const erro = new Error(
       corpo.message ?? "Não foi possível concluir a ação.",
     );
     erro.status = resposta.status;
-    erro.errors = corpo.errors ?? {}; // Permite exibir erros específicos do formulário.
+    erro.errors = corpo.errors ?? {};
     throw erro;
   }
   return corpo;
@@ -17,8 +16,8 @@ async function lerResposta(resposta) {
 
 export async function requisitar(rota, method = "GET", dados) {
   const headers = { Accept: "application/json" };
+  const ehArquivo = dados instanceof FormData;
   if (method !== "GET") {
-    // O token acompanha a sessão atual; login/logout/troca de senha podem renová-lo.
     const csrf = await fetch(API_URL + "/csrf-token", {
       credentials: "include",
       cache: "no-store",
@@ -26,14 +25,19 @@ export async function requisitar(rota, method = "GET", dados) {
     });
     const { csrf_token } = await lerResposta(csrf);
     headers["X-CSRF-TOKEN"] = csrf_token;
-    headers["Content-Type"] = "application/json";
+    if (!ehArquivo) headers["Content-Type"] = "application/json";
   }
 
   const resposta = await fetch(API_URL + rota, {
     method,
-    credentials: "include", // Envia o cookie HttpOnly; não salva token em localStorage.
+    credentials: "include",
     headers,
-    body: dados === undefined ? undefined : JSON.stringify(dados),
+    body:
+      dados === undefined
+        ? undefined
+        : ehArquivo
+          ? dados
+          : JSON.stringify(dados),
   });
   return lerResposta(resposta);
 }

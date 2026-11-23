@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import { logout } from '../../services/authService';
@@ -57,9 +57,11 @@ export default function Feed() {
   const { usuario } = useOutletContext() ?? {};
   const nomeUsuario = usuario?.name ?? 'Meu perfil';
   const avatarUsuario = usuario?.avatar_url || avatarPadrao;
-
   const [texto, setTexto] = useState('');
   const [servicoSelecionado, setServicoSelecionado] = useState('');
+  const [arquivo, setArquivo] = useState(null);
+  const [previa, setPrevia] = useState(null);
+  const inputArquivoRef = useRef(null);
 
   const [posts, setPosts] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -79,7 +81,34 @@ export default function Feed() {
   }, []);
 
   function escolherMidia() {
-    setAviso('O envio de fotos e vídeos estará disponível em breve.');
+    inputArquivoRef.current?.click();
+  }
+
+  function escolherVideo() {
+    setAviso('O envio de vídeos estará disponível em breve.');
+  }
+
+  function aoEscolherArquivo(e) {
+    const escolhido = e.target.files?.[0];
+    e.target.value = '';
+    if (!escolhido) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(escolhido.type)) {
+      setAviso('Escolha uma imagem JPG, PNG ou WEBP.');
+      return;
+    }
+    if (escolhido.size > 2 * 1024 * 1024) {
+      setAviso('A imagem deve ter no máximo 2 MB.');
+      return;
+    }
+    removerArquivo();
+    setArquivo(escolhido);
+    setPrevia(URL.createObjectURL(escolhido));
+  }
+
+  function removerArquivo() {
+    if (previa) URL.revokeObjectURL(previa);
+    setArquivo(null);
+    setPrevia(null);
   }
 
   async function publicar(e) {
@@ -92,10 +121,12 @@ export default function Feed() {
       const criada = await criarPostagem({
         titulo: servicoSelecionado || 'Publicação',
         conteudo,
+        anexo: arquivo,
       });
       setPosts(atual => [paraPost(criada), ...atual]);
       setTexto('');
       setServicoSelecionado('');
+      removerArquivo();
       setAviso('Publicação adicionada com sucesso!');
     } catch (erro) {
       if (erro.status === 401 || erro.status === 419) {
@@ -108,6 +139,7 @@ export default function Feed() {
       setPublicando(false);
     }
   }
+
 
   async function sair() {
     try {
@@ -167,11 +199,25 @@ export default function Feed() {
               rows={3} 
               maxLength={3000} 
             />
+                        <input
+              ref={inputArquivoRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={aoEscolherArquivo}
+              hidden
+            />
+
+            {previa && (
+              <div className="feed-previa">
+                <img src={previa} alt="Pré-visualização da imagem" />
+                <button type="button" onClick={removerArquivo} aria-label="Remover imagem">✕</button>
+              </div>
+            )}
 
             <div className="feed-composer-actions">
               <div className="feed-composer-buttons">
                 <button type="button" onClick={escolherMidia}><Icone tipo="foto" />Foto</button>
-                <button type="button" onClick={escolherMidia}><Icone tipo="video" />Vídeo</button>
+                <button type="button" onClick={escolherVideo}><Icone tipo="video" />Vídeo</button>
                 
                 <select 
                   className="feed-category-select"
