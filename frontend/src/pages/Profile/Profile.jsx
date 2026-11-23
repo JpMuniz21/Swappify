@@ -8,7 +8,7 @@ import {
   listarCategorias, criarServico, excluirServico, adicionarProcurado, removerProcurado,
 } from '../../services/servicoService';
 import avatarPadrao from '../../assets/avatar-padrao.svg';
-import fotoPortfolioPet from '../../assets/portfolio-pet.png';
+import { adicionarFotoPortfolio, removerFotoPortfolio } from '../../services/portfolioService';
 import './Profile.css';
 
 // dados iniciais do perfil
@@ -60,6 +60,15 @@ function servicoDaApi(servico) {
     iconeTipo: servico.tipo,
   };
 }
+
+// Foto do portfólio vinda da API → formato dos cards do perfil.
+function portfolioDaApi(item) {
+  return { id: item.id, titulo: item.titulo, imagem: item.imagem_url };
+}
+
+const LIMITE_PORTFOLIO = 12; // mesmo limite do backend
+const LIMITE_TITULO_PORTFOLIO = 80;
+const FORM_PORTFOLIO_INICIAL = { arquivo: null, preview: '', titulo: '' };
 
 // Item de "O que eu procuro" vindo da API → formato dos cards do perfil.
 function procuradoDaApi(item) {
@@ -169,6 +178,10 @@ export default function Profile() {
   // portfolio
   const [portfolio, setPortfolio] = useState([]);
   const [modalPortfolioAberto, setModalPortfolioAberto] = useState(false);
+  const [modalNovaFotoAberto, setModalNovaFotoAberto] = useState(false);
+  const [formPortfolio, setFormPortfolio] = useState(FORM_PORTFOLIO_INICIAL);
+  const [enviandoPortfolio, setEnviandoPortfolio] = useState(false);
+  const [erroPortfolio, setErroPortfolio] = useState('');
 
   // avaliacoes
   const [modalAvaliacoesAberto, setModalAvaliacoesAberto] = useState(false);
@@ -259,6 +272,9 @@ export default function Profile() {
           }
           if (Array.isArray(dadosApi.servicos_procurados)) {
             setServicosProcurados(dadosApi.servicos_procurados.map(procuradoDaApi));
+          }
+          if (Array.isArray(dadosApi.portfolio)) {
+            setPortfolio(dadosApi.portfolio.map(portfolioDaApi));
           }
         }
       })
@@ -377,21 +393,70 @@ export default function Profile() {
   }
 
   // fotos do portfolio
+  function fecharNovaFoto() {
+    if (formPortfolio.preview) URL.revokeObjectURL(formPortfolio.preview);
+    setFormPortfolio(FORM_PORTFOLIO_INICIAL);
+    setErroPortfolio('');
+    setModalNovaFotoAberto(false);
+  }
+
   function handleAdicionarFotoPortfolio() {
-    setPortfolio((prev) => {
-      if (prev.length > 0) return prev;
-      return [
-        {
-          id: 1,
-          titulo: 'Atendimento Veterinário e Cuidado Pet',
-          imagem: fotoPortfolioPet,
-        },
-      ];
+    if (portfolio.length >= LIMITE_PORTFOLIO) {
+      setErroPortfolio(`Seu portfólio pode ter no máximo ${LIMITE_PORTFOLIO} fotos.`);
+      setModalPortfolioAberto(true);
+      return;
+    }
+    setErroPortfolio('');
+    setModalNovaFotoAberto(true);
+  }
+
+  function handleEscolherFotoPortfolio(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!arquivo) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) {
+      setErroPortfolio('Use uma imagem JPG, PNG ou WEBP.');
+      return;
+    }
+    if (arquivo.size > 4 * 1024 * 1024) {
+      setErroPortfolio('A imagem pode ter no máximo 4 MB.');
+      return;
+    }
+    setErroPortfolio('');
+    setFormPortfolio((prev) => {
+      if (prev.preview) URL.revokeObjectURL(prev.preview);
+      return { ...prev, arquivo, preview: URL.createObjectURL(arquivo) };
     });
   }
 
-  function handleRemoverFotoPortfolio(id) {
-    setPortfolio((prev) => prev.filter((p) => p.id !== id));
+  async function handleSalvarFotoPortfolio(e) {
+    e.preventDefault();
+    const titulo = formPortfolio.titulo.trim();
+    if (!formPortfolio.arquivo || !titulo) {
+      setErroPortfolio('Escolha uma imagem e dê um título.');
+      return;
+    }
+    setEnviandoPortfolio(true);
+    try {
+      const resposta = await adicionarFotoPortfolio(formPortfolio.arquivo, titulo);
+      setPortfolio((prev) => [...prev, portfolioDaApi(resposta.data)]);
+      fecharNovaFoto();
+    } catch (erro) {
+      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível enviar a foto.'));
+    } finally {
+      setEnviandoPortfolio(false);
+    }
+  }
+
+  async function handleRemoverFotoPortfolio(id) {
+    if (!window.confirm('Remover esta foto do portfólio?')) return;
+    setErroPortfolio('');
+    try {
+      await removerFotoPortfolio(id);
+      setPortfolio((prev) => prev.filter((p) => p.id !== id));
+    } catch (erro) {
+      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível remover a foto.'));
+    }
   }
 
   // controle de disponibilidade
@@ -932,6 +997,9 @@ export default function Profile() {
                   </div>
                 </button>
               </div>
+            )}
+            {erroPortfolio && !modalNovaFotoAberto && !modalPortfolioAberto && (
+              <p className="perfil-erro" role="alert">{erroPortfolio}</p>
             )}
           </section>
 
@@ -1508,7 +1576,66 @@ export default function Profile() {
               ))}
             </>
           )}
+          {erroPortfolio && !modalNovaFotoAberto && (
+            <p className="perfil-erro" role="alert">{erroPortfolio}</p>
+          )}
         </div>
+      </Modal>
+
+      {/* modal para adicionar foto ao portfolio */}
+      <Modal
+        isOpen={modalNovaFotoAberto}
+        onClose={fecharNovaFoto}
+        title="Adicionar ao Portfólio"
+      >
+        <form onSubmit={handleSalvarFotoPortfolio} className="modal-body">
+          <div className="modal-form-grupo">
+            <label htmlFor="portfolio-imagem" className="modal-label">
+              Foto do trabalho (JPG, PNG ou WEBP, até 4 MB)
+            </label>
+            {formPortfolio.preview && (
+              <img
+                src={formPortfolio.preview}
+                alt="Pré-visualização"
+                style={{ width: '100%', maxHeight: '260px', objectFit: 'cover', borderRadius: '12px' }}
+              />
+            )}
+            <input
+              id="portfolio-imagem"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="modal-input"
+              onChange={handleEscolherFotoPortfolio}
+            />
+          </div>
+
+          <div className="modal-form-grupo">
+            <label htmlFor="portfolio-titulo" className="modal-label">
+              Título
+            </label>
+            <input
+              id="portfolio-titulo"
+              type="text"
+              required
+              className="modal-input"
+              placeholder="Ex: Reforma de cozinha, Ensaio fotográfico..."
+              maxLength={LIMITE_TITULO_PORTFOLIO}
+              value={formPortfolio.titulo}
+              onChange={(e) => setFormPortfolio({ ...formPortfolio, titulo: e.target.value })}
+            />
+          </div>
+
+          {erroPortfolio && <p className="perfil-erro" role="alert">{erroPortfolio}</p>}
+
+          <div className="modal-footer">
+            <button type="button" className="modal-btn-cancel" onClick={fecharNovaFoto}>
+              Cancelar
+            </button>
+            <button type="submit" className="modal-btn-submit" disabled={enviandoPortfolio}>
+              {enviandoPortfolio ? 'Enviando...' : 'Adicionar'}
+            </button>
+          </div>
+        </form>
       </Modal>
 
       {/* modal de avaliacoes */}
