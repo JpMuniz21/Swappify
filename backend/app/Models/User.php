@@ -48,6 +48,11 @@ class User extends Authenticatable
         return $this->hasMany(ServicoProcurado::class, 'usuario_id')->orderBy('id'); // ordem em que foram adicionados
     }
 
+    public function portfolio(): HasMany
+    {
+        return $this->hasMany(PortfolioItem::class, 'usuario_id')->orderBy('id'); // ordem em que foram adicionadas
+    }
+
     public function servicos(): HasMany
     {
         return $this->hasMany(Servico::class, 'usuario_id');
