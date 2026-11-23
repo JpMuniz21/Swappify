@@ -156,3 +156,75 @@
         justify-self: start;
     }
 }
+
+.agenda-barra {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.agenda-novo {
+    border: none;
+    border-radius: 20px;
+    padding: 9px 18px;
+    background: var(--roxo-escuro);
+    color: #fff;
+    font: 600 0.85rem 'Montserrat', sans-serif;
+    cursor: pointer;
+}
+
+.agenda-novo:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.agenda-barra small {
+    color: var(--texto-suave);
+}
+
+.agenda-aviso {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #eee4f7;
+    font-size: 0.85rem;
+    color: var(--roxo-escuro);
+}
+
+.agenda-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 14px;
+}
+
+.agenda-espera {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+}
+
+.agenda-acao {
+    border: 1px solid var(--borda-input);
+    border-radius: 16px;
+    padding: 6px 12px;
+    background: #fff;
+    color: var(--roxo-escuro);
+    font: 500 0.78rem 'Montserrat', sans-serif;
+    cursor: pointer;
+}
+
+.agenda-acao--principal {
+    border-color: var(--roxo-escuro);
+    background: var(--roxo-escuro);
+    color: #fff;
+}
+
+.agenda-acao--perigo {
+    border-color: #e6b8b2;
+    color: #c0392b;
+}

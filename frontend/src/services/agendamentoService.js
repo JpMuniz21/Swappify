@@ -1,93 +1,43 @@
+import { requisitar } from './authService';
+
 export const STATUS = {
-  pendente: { rotulo: "Pendente", cor: "#d99a1e" },
-  confirmada: { rotulo: "Confirmada", cor: "#8e4fc4" },
-  concluida: { rotulo: "Concluída", cor: "#2e8f57" },
-  cancelada: { rotulo: "Cancelada", cor: "#a59bb0" },
+  pendente: { rotulo: 'Pendente', cor: '#d99a1e' },
+  confirmada: { rotulo: 'Confirmada', cor: '#8e4fc4' },
+  concluida: { rotulo: 'Concluída', cor: '#2e8f57' },
+  cancelada: { rotulo: 'Cancelada', cor: '#a59bb0' },
 };
 
 export function chaveDoDia(data) {
-  const mes = String(data.getMonth() + 1).padStart(2, "0");
-  const dia = String(data.getDate()).padStart(2, "0");
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
   return `${data.getFullYear()}-${mes}-${dia}`;
 }
 
-// ---------------------------------------------------------------------------
-// DADOS DE EXEMPLO — trocar por chamadas ao back quando a troca tiver data/hora.
-// Formato que a tela espera de cada agendamento:
-//   { id, inicio (ISO), parceiro: { nome }, ofereco, recebo, status }
-// Se o TrocaResource vier com outros nomes de campo, converta aqui dentro
-// (uma função "normalizar") para a tela não precisar mudar.
-// ---------------------------------------------------------------------------
-function emDias(dias, hora, minuto = 0) {
-  const base = new Date();
-  return new Date(
-    base.getFullYear(),
-    base.getMonth(),
-    base.getDate() + dias,
-    hora,
-    minuto,
-  ).toISOString();
+// GET /agendamentos: só os agendamentos das trocas em que a pessoa participa.
+// Cada item já vem no formato da tela:
+//   { id, match_id, inicio (ISO), status, observacao, criado_por_mim,
+//     parceiro: { id, nome }, ofereco, recebo }
+export async function listarAgendamentos() {
+  const resposta = await requisitar('/agendamentos');
+  return resposta?.data ?? [];
 }
 
-const EXEMPLOS = [
-  {
-    id: 1,
-    inicio: emDias(-6, 10),
-    parceiro: { nome: "Ana Ribeiro" },
-    ofereco: "Design de logo",
-    recebo: "Aulas de inglês",
-    status: "concluida",
-  },
-  {
-    id: 2,
-    inicio: emDias(-2, 16, 30),
-    parceiro: { nome: "Carlos Lima" },
-    ofereco: "Edição de vídeo",
-    recebo: "Aulas de violão",
-    status: "cancelada",
-  },
-  {
-    id: 3,
-    inicio: emDias(0, 15),
-    parceiro: { nome: "Maria Souza" },
-    ofereco: "Fotos de produto",
-    recebo: "Consultoria de marketing",
-    status: "confirmada",
-  },
-  {
-    id: 4,
-    inicio: emDias(0, 18, 30),
-    parceiro: { nome: "Pedro Alves" },
-    ofereco: "Revisão de textos",
-    recebo: "Corte de cabelo",
-    status: "pendente",
-  },
-  {
-    id: 5,
-    inicio: emDias(3, 9),
-    parceiro: { nome: "Juliana Costa" },
-    ofereco: "Aulas de matemática",
-    recebo: "Marmitas fit",
-    status: "confirmada",
-  },
-  {
-    id: 6,
-    inicio: emDias(5, 14),
-    parceiro: { nome: "Rafael Nunes" },
-    ofereco: "Site simples",
-    recebo: "Identidade visual",
-    status: "pendente",
-  },
-  {
-    id: 7,
-    inicio: emDias(9, 11),
-    parceiro: { nome: "Beatriz Lima" },
-    ofereco: "Manicure",
-    recebo: "Fotos de perfil",
-    status: "confirmada",
-  },
-];
+// GET /matches: trocas ativas da pessoa (usadas no formulário "Novo agendamento").
+// Cada item: { id, status, outro: { id, name }, meu_servico: { titulo }, servico_do_outro: { titulo } }
+export async function listarTrocasAtivas() {
+  const resposta = await requisitar('/matches');
+  return resposta?.data ?? [];
+}
 
-export async function listarAgendamentos() {
-  return EXEMPLOS;
+// POST /agendamentos: nasce "pendente"; a outra pessoa precisa confirmar.
+export async function criarAgendamento({ match_id, inicio, observacao }) {
+  const resposta = await requisitar('/agendamentos', 'POST', { match_id, inicio, observacao });
+  return resposta?.data;
+}
+
+// PATCH /agendamentos/{id}: remarcar ({ inicio, observacao }) ou mudar o status
+// ({ status: 'confirmada' | 'concluida' | 'cancelada' }).
+export async function atualizarAgendamento(id, dados) {
+  const resposta = await requisitar(`/agendamentos/${id}`, 'PATCH', dados);
+  return resposta?.data;
 }
