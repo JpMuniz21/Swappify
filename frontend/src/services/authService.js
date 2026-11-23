@@ -14,17 +14,32 @@ async function lerResposta(resposta) {
   return corpo;
 }
 
-export async function requisitar(rota, method = "GET", dados) {
+// O Laravel envia o token CSRF no cookie XSRF-TOKEN em toda resposta. Lendo o cookie
+// evitamos uma requisição extra a /csrf-token antes de cada escrita.
+function lerCookieXsrf() {
+  const item = document.cookie
+    .split("; ")
+    .find((parte) => parte.startsWith("XSRF-TOKEN="));
+  return item ? decodeURIComponent(item.slice("XSRF-TOKEN=".length)) : null;
+}
+
+async function buscarTokenCsrf() {
+  const resposta = await fetch(API_URL + "/csrf-token", {
+    credentials: "include",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  const { csrf_token } = await lerResposta(resposta);
+  return csrf_token;
+}
+
+export async function requisitar(rota, method = "GET", dados, tentarDeNovo = true) {
   const headers = { Accept: "application/json" };
   const ehArquivo = dados instanceof FormData;
   if (method !== "GET") {
-    const csrf = await fetch(API_URL + "/csrf-token", {
-      credentials: "include",
-      cache: "no-store",
-      headers,
-    });
-    const { csrf_token } = await lerResposta(csrf);
-    headers["X-CSRF-TOKEN"] = csrf_token;
+    const cookie = lerCookieXsrf();
+    if (cookie) headers["X-XSRF-TOKEN"] = cookie;
+    else headers["X-CSRF-TOKEN"] = await buscarTokenCsrf();
     if (!ehArquivo) headers["Content-Type"] = "application/json";
   }
 
@@ -39,6 +54,12 @@ export async function requisitar(rota, method = "GET", dados) {
           ? dados
           : JSON.stringify(dados),
   });
+
+  // 419 = token vencido (ex.: aba aberta por muito tempo). Renova uma vez e repete.
+  if (resposta.status === 419 && method !== "GET" && tentarDeNovo) {
+    document.cookie = "XSRF-TOKEN=; Max-Age=0; path=/";
+    return requisitar(rota, method, dados, false);
+  }
   return lerResposta(resposta);
 }
 
