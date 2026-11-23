@@ -7,7 +7,16 @@ export const listarPostagens = async () => {
 };
 
 // POST /postagens exige login + CSRF. O backend define autor, data e status.
-export const criarPostagem = async ({ titulo, conteudo, url_anexo }) => {
-  const resposta = await requisitar('/postagens', 'POST', { titulo, conteudo, url_anexo });
+export const criarPostagem = async ({ titulo, conteudo, url_anexo, anexo }) => {
+  let corpo = { titulo, conteudo, url_anexo };
+
+  if (anexo) {
+    corpo = new FormData();
+    corpo.append("titulo", titulo);
+    corpo.append("conteudo", conteudo);
+    corpo.append("anexo", anexo);
+  }
+
+  const resposta = await requisitar("/postagens", "POST", corpo);
   return resposta?.data;
 };
