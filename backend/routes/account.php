@@ -9,6 +9,7 @@ use App\Http\Controllers\ServicoProcuradoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController; // Registra os endereços HTTP.
 use App\Http\Controllers\AgendamentoController;
+use App\Http\Controllers\PortfolioController;
 
 // Este arquivo é incluído por web.php para ter cookies, sessão e proteção CSRF.
 // FRONTEND: as URLs começam em http://localhost:8000/api; consultar docs/usuarios.md.
@@ -34,6 +35,10 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::get('/me/procurados', [ServicoProcuradoController::class, 'index']);
         Route::post('/me/procurados', [ServicoProcuradoController::class, 'store']);
         Route::delete('/me/procurados/{procurado}', [ServicoProcuradoController::class, 'destroy']);
+        // Portfólio do perfil (POST é multipart: imagem + titulo)
+        Route::get('/me/portfolio', [PortfolioController::class, 'index']);
+        Route::post('/me/portfolio', [PortfolioController::class, 'store']);
+        Route::delete('/me/portfolio/{item}', [PortfolioController::class, 'destroy'])->whereNumber('item');
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::post('/me/avatar', [AccountController::class, 'avatar']); // Envia a foto de perfil (arquivo, não JSON).
