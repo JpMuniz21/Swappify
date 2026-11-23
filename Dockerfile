@@ -44,11 +44,21 @@ RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
+# Desempenho (o banco fica em outro datacenter, cada ida ao banco custa caro):
+# - sessão em arquivo no servidor: não consulta/grava o banco a cada clique
+#   (efeito colateral: um deploy novo desloga quem estava logado);
+# - cache em arquivo: o limite de requisições (throttle) não consulta o banco;
+# - conexão persistente: cada processo do Apache reaproveita a conexão com o banco
+#   em vez de abrir uma conexão TLS nova a cada requisição.
+# Variáveis com o mesmo nome no Railway têm prioridade sobre estes valores.
 ENV PORT=8080 \
     APP_NAME=Swappify \
     APP_ENV=production \
     APP_DEBUG=false \
-    LOG_CHANNEL=stderr
+    LOG_CHANNEL=stderr \
+    SESSION_DRIVER=file \
+    CACHE_STORE=file \
+    DB_PERSISTENT=true
 
 EXPOSE 8080
 CMD ["sh", "/var/www/html/docker/entrypoint.prod.sh"]
