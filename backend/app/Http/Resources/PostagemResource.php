@@ -17,10 +17,11 @@ class PostagemResource extends JsonResource
             'url_anexo' => $this->url_anexo,
             'data_publicacao' => $this->data_publicacao,
             'status' => $this->status,
-            'usuario' => [
+                        'usuario' => [
                 'id' => $this->usuario->id,
                 'name' => $this->usuario->name,
                 'profession' => $this->usuario->profession,
+                'avatar_url' => $this->usuario->avatar_url,
             ],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
