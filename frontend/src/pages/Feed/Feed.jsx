@@ -29,6 +29,7 @@ function paraPost(api) {
     id: api.id,
     nome: api.usuario?.name ?? 'Usuário',
     profissao: api.usuario?.profession ?? '',
+    avatar: api.usuario?.avatar_url ?? null,
     horario: tempoRelativo(api.data_publicacao),
     texto: api.conteudo,
     imagem: api.url_anexo || null,

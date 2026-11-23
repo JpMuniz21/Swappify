@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule; // Permite validar e-mail único, ignorando a pr
 use Illuminate\Validation\Rules\Password; // Define a política de senha.
 use Illuminate\Validation\ValidationException; // Devolve erros de validação como HTTP 422.
 use Symfony\Component\HttpFoundation\Response; // Define respostas sem corpo, como HTTP 204.
+use Illuminate\Support\Facades\Storage; // Salva e apaga a foto de perfil no disco público.
 
 // CRUD do próprio usuário. Administração deverá ter rotas e autorização separadas.
 class AccountController extends Controller
@@ -101,6 +102,29 @@ class AccountController extends Controller
         }
 
         return response()->json(['data' => $user->fresh()->load('localizacao')]); // Entrega ao frontend o perfil atualizado.
+    }
+
+
+        // Foto de perfil: chega como arquivo (multipart); o PATCH /me não recebe arquivos.
+    public function avatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $user = $request->user('web');
+        $anterior = $user->avatar_url;
+
+        $caminho = $request->file('avatar')->store('avatares', 'public');
+        $user->avatar_url = asset('storage/'.$caminho);
+        $user->save();
+
+        // apaga a foto antiga, só se ela foi enviada por aqui
+        if ($anterior && str_contains($anterior, '/storage/avatares/')) {
+            Storage::disk('public')->delete('avatares/'.basename($anterior));
+        }
+
+        return response()->json(['data' => $user->fresh()->load('localizacao')]);
     }
 
     // DELETE: exclui definitivamente a própria conta após conferir a senha.

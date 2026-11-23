@@ -36,6 +36,7 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::delete('/me/procurados/{procurado}', [ServicoProcuradoController::class, 'destroy']);
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
+        Route::post('/me/avatar', [AccountController::class, 'avatar']); // Envia a foto de perfil (arquivo, não JSON).
         Route::delete('/me', [AccountController::class, 'destroy']); // Exclui a conta confirmando a senha.
         Route::get('/conversas', [ChatController::class, 'conversas']);
         // IDs são números; outro valor responde 404 (no Postgres, comparar texto com bigint daria erro 500).

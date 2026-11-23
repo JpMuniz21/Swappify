@@ -42,11 +42,18 @@ export async function requisitar(rota, method = "GET", dados) {
   return lerResposta(resposta);
 }
 
-export const login = (dados) => requisitar('/login', 'POST', dados);
-export const cadastrar = (dados) => requisitar('/register', 'POST', dados);
-export const consultarPerfil = () => requisitar('/me');
-export const atualizarPerfil = (dados) => requisitar('/me', 'PATCH', dados);
-export const cadastrarServico = (dados) => requisitar('/servicos', 'POST', dados);
-export const listarServicos = () => requisitar('/servicos', 'GET');
-export const excluirConta = (senha) => requisitar('/me', 'DELETE', { current_password: senha });
-export const logout = () => requisitar('/logout', 'POST');
+export const login = (dados) => requisitar("/login", "POST", dados);
+export const cadastrar = (dados) => requisitar("/register", "POST", dados);
+export const consultarPerfil = () => requisitar("/me");
+export const atualizarPerfil = (dados) => requisitar("/me", "PATCH", dados);
+export const cadastrarServico = (dados) =>
+  requisitar("/servicos", "POST", dados);
+export const listarServicos = () => requisitar("/servicos", "GET");
+export const excluirConta = (senha) =>
+  requisitar("/me", "DELETE", { current_password: senha });
+export const logout = () => requisitar("/logout", "POST");
+export async function enviarFotoPerfil(arquivo) {
+  const dados = new FormData();
+  dados.append("avatar", arquivo);
+  return requisitar("/me/avatar", "POST", dados);
+}

@@ -1114,3 +1114,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+.perfil-avatar-botao {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: block;
+}
+
+.perfil-avatar-trocar {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.perfil-avatar-botao:hover .perfil-avatar-trocar,
+.perfil-avatar-botao:focus-visible .perfil-avatar-trocar,
+.perfil-avatar-botao:disabled .perfil-avatar-trocar {
+  opacity: 1;
+}
+
+.perfil-avatar-botao:disabled {
+  cursor: progress;
+}
