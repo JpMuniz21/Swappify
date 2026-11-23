@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Calendario from '../../components/Calendario/Calendario';
 import AgendamentoForm from '../../components/AgendamentoForm/AgendamentoForm';
@@ -140,6 +140,46 @@ export default function Agendamentos() {
 
   // confirmação pendente: null ou { item, status, titulo, mensagem, rotulo }
   const [pedido, setPedido] = useState(null);
+
+  // Link vindo do chat: /agendamentos?match=8&data=2026-11-24&hora=15:00
+  // abre o formulário de novo agendamento já preenchido (uma única vez).
+  const [params, setParams] = useSearchParams();
+  const abriuDoLink = useRef(false);
+
+  useEffect(() => {
+    if (carregando || abriuDoLink.current) return;
+    const data = params.get('data');
+    if (!data) return;
+
+    abriuDoLink.current = true;
+    setParams({}, { replace: true });
+    if (trocas.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(data)) return;
+
+    const hora = params.get('hora');
+    const match = Number(params.get('match'));
+    setErroForm('');
+    setFormulario({
+      agendamento: null,
+      inicial: {
+        data,
+        hora: /^\d{2}:\d{2}$/.test(hora ?? '') ? hora : null,
+        match_id: trocas.some((troca) => troca.id === match) ? match : null,
+      },
+    });
+  }, [carregando, trocas, params, setParams]);
+
+  // Link vindo de uma notificação: /agendamentos?dia=2026-11-24 abre o calendário nesse dia.
+  useEffect(() => {
+    const dia = params.get('dia');
+    if (!dia) return;
+
+    setParams({}, { replace: true });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return;
+
+    const [ano, mesDoLink, diaDoMes] = dia.split('-').map(Number);
+    setMes(new Date(ano, mesDoLink - 1, 1));
+    setSelecionado(new Date(ano, mesDoLink - 1, diaDoMes));
+  }, [params, setParams]);
 
   useEffect(() => {
     let cancelado = false;
@@ -341,7 +381,7 @@ export default function Agendamentos() {
                     {doDia.map((item) => (
                       <li key={item.id}>
                         <CartaoAgendamento agendamento={item} />
-                        <Acoes agendamento={item} onRemarcar={abrirRemarcar} onStatus={mudarStatus} onConversar={() => navigate('/chat')} ocupado={agindo} />
+                        <Acoes agendamento={item} onRemarcar={abrirRemarcar} onStatus={mudarStatus} onConversar={() => navigate(`/chat?match=${item.match_id}`)} ocupado={agindo} />
                       </li>
                     ))}
                   </ul>
@@ -372,6 +412,7 @@ export default function Agendamentos() {
           key={formulario.agendamento?.id ?? 'novo'}
           trocas={trocas}
           agendamento={formulario.agendamento}
+          inicial={formulario.inicial}
           dataInicial={dataInicial}
           salvando={salvando}
           erro={erroForm}

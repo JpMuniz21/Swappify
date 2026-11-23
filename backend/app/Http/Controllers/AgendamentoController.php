@@ -103,6 +103,10 @@ class AgendamentoController extends Controller
             abort_unless($agendamento->status === 'confirmada', 422, 'Só é possível concluir um agendamento confirmado.');
         }
 
+        if ($novo === 'cancelada') {
+            $agendamento->cancelado_por_id = $usuario->id;
+        }
+
         $agendamento->status = $novo;
     }
 

@@ -15,6 +15,7 @@ class Agendamento extends Model
     protected $fillable = [
         'match_id',
         'criado_por_id',
+        'cancelado_por_id',
         'inicio',
         'status',
         'observacao',
