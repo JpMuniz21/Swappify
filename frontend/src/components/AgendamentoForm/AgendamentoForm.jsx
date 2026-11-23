@@ -17,13 +17,16 @@ function paraCampoHora(data) {
 // - trocas: lista de GET /matches (só usada ao criar)
 // - agendamento: se vier preenchido, o formulário é de remarcação
 // - dataInicial: dia sugerido ao criar
-export default function AgendamentoForm({ trocas, agendamento, dataInicial, salvando, erro, onSalvar, onCancelar }) {
+export default function AgendamentoForm({ trocas, agendamento, inicial, dataInicial, salvando, erro, onSalvar, onCancelar }) {
   const editando = Boolean(agendamento);
   const base = agendamento ? new Date(agendamento.inicio) : dataInicial;
 
-  const [matchId, setMatchId] = useState(agendamento ? String(agendamento.match_id) : String(trocas[0]?.id ?? ''));
-  const [data, setData] = useState(paraCampoData(base));
-  const [hora, setHora] = useState(agendamento ? paraCampoHora(base) : '09:00');
+  // "inicial" vem de um link do chat (data/hora/troca já escolhidas); só vale ao criar.
+  const [matchId, setMatchId] = useState(
+    agendamento ? String(agendamento.match_id) : String(inicial?.match_id ?? trocas[0]?.id ?? ''),
+  );
+  const [data, setData] = useState(agendamento ? paraCampoData(base) : (inicial?.data ?? paraCampoData(base)));
+  const [hora, setHora] = useState(agendamento ? paraCampoHora(base) : (inicial?.hora ?? '09:00'));
   const [observacao, setObservacao] = useState(agendamento?.observacao ?? '');
 
   useEffect(() => {

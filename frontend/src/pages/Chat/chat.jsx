@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import TextoComDatas from "../../components/TextoComDatas/TextoComDatas";
 import {
   listarConversas,
   listarMensagens,
@@ -31,6 +33,7 @@ function Avatar({ nome = "?", url, tamanho = 32 }) {
 }
 
 export default function Chat() {
+  const { usuario } = useOutletContext() ?? {}; // pessoa logada (vem da RotaProtegida)
   const [conversas, setConversas] = useState([]); // [{ id_match, outro: {...} }]
   const [conversaAtivaId, setConversaAtivaId] = useState(null);
   const [mensagens, setMensagens] = useState([]);
@@ -47,7 +50,10 @@ export default function Chat() {
       try {
         const lista = await listarConversas();
         setConversas(lista);
-        if (lista.length > 0) setConversaAtivaId(lista[0].id_match);
+        // abre a conversa pedida em /chat?match=ID (ex.: botão "Conversar" da agenda)
+        const pedida = Number(new URLSearchParams(window.location.search).get("match"));
+        const alvo = lista.find((c) => c.id_match === pedida) ?? lista[0];
+        if (alvo) setConversaAtivaId(alvo.id_match);
       } catch (e) {
         console.error(e);
         setErro(e.message);
@@ -119,7 +125,7 @@ export default function Chat() {
 
   return (
     <div className="pagina">
-      <Navbar />
+      <Navbar usuario={usuario} />
 
       <div className="chat">
         <aside className="lateral">
@@ -173,7 +179,11 @@ export default function Chat() {
                       (m.minha ? "balao--minha" : "balao--outro")
                     }
                   >
-                    {m.conteudo}
+                    <TextoComDatas
+                      texto={m.conteudo}
+                      matchId={conversaAtivaId}
+                      enviadaEm={m.data_envio}
+                    />
                   </div>
                 ))}
                 <div ref={fimDasMensagens} />
