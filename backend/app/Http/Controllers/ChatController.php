@@ -27,7 +27,7 @@ class ChatController extends Controller
                 'outro' => [
                     'id' => $outro->id,
                     'nome' => $outro->name,
-                    'avatar_url' => null,
+                    'avatar_url' => $outro->avatar_url,
                 ],
             ];
         })->values());

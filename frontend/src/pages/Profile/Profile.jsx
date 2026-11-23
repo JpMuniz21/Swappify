@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Modal from '../../components/Modal/Modal';
 import ServiceSelectModal from '../../components/ServiceSelectModal/ServiceSelectModal';
-import { consultarPerfil, atualizarPerfil, logout } from '../../services/authService';
+import { consultarPerfil, atualizarPerfil, logout, enviarFotoPerfil } from '../../services/authService';
 import {
   listarCategorias, criarServico, excluirServico, adicionarProcurado, removerProcurado,
 } from '../../services/servicoService';
@@ -180,7 +180,7 @@ export default function Profile() {
   const [formDisponibilidade, setFormDisponibilidade] = useState(DADOS_DISPONIBILIDADE_INICIAL);
   const [modalEditarDisponibilidade, setModalEditarDisponibilidade] = useState(false);
 
-  const [formPerfil, setFormPerfil] = useState({
+   const [formPerfil, setFormPerfil] = useState({
     name: DADOS_INICIAIS_FIGMA.name,
     profession: DADOS_INICIAIS_FIGMA.profession,
     cidade: '',
@@ -193,6 +193,34 @@ export default function Profile() {
   const [erroPerfil, setErroPerfil] = useState('');
   const [erroBio, setErroBio] = useState('');
 
+  // foto de perfil
+  const inputFotoRef = useRef(null);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const [erroFoto, setErroFoto] = useState('');
+
+  async function handleEscolherFoto(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!arquivo) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) {
+      setErroFoto('Use uma imagem JPG, PNG ou WEBP.');
+      return;
+    }
+    if (arquivo.size > 2 * 1024 * 1024) {
+      setErroFoto('A imagem pode ter no máximo 2 MB.');
+      return;
+    }
+    setErroFoto('');
+    setEnviandoFoto(true);
+    try {
+      const resposta = await enviarFotoPerfil(arquivo);
+      setUsuario((prev) => ({ ...prev, avatar_url: resposta.data.avatar_url || prev.avatar_url }));
+    } catch (erro) {
+      setErroFoto(mensagemDeErro(erro, 'Não foi possível enviar a foto.'));
+    } finally {
+      setEnviandoFoto(false);
+    }
+  }
 
   useEffect(() => {
     let ativo = true;
@@ -518,7 +546,7 @@ export default function Profile() {
       <Navbar
         usuario={usuario}
         onLogout={handleLogout}
-        onEditProfile={() => abrirEdicaoPerfil}
+        onEditProfile={abrirEdicaoPerfil}
       />
 
       {/* conteudo principal */}
@@ -530,12 +558,31 @@ export default function Profile() {
             <div className="perfil-usuario-col">
               <div className="perfil-avatar-wrapper">
                 {usuario.isNovo && <span className="perfil-badge-novo">Novo</span>}
-                <img
-                  src={usuario.avatar_url || avatarPadrao}
-                  alt={`Foto de ${usuario.name}`}
-                  className="perfil-avatar-foto"
+                <button
+                  type="button"
+                  className="perfil-avatar-botao"
+                  onClick={() => inputFotoRef.current?.click()}
+                  disabled={enviandoFoto}
+                  aria-label="Alterar foto de perfil"
+                >
+                  <img
+                    src={usuario.avatar_url || avatarPadrao}
+                    alt={`Foto de ${usuario.name}`}
+                    className="perfil-avatar-foto"
+                  />
+                  <span className="perfil-avatar-trocar">
+                    {enviandoFoto ? 'Enviando...' : 'Alterar foto'}
+                  </span>
+                </button>
+                <input
+                  ref={inputFotoRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleEscolherFoto}
+                  hidden
                 />
-              </div>
+                            </div>
+              {erroFoto && <p className="perfil-erro" role="alert">{erroFoto}</p>}
 
               <h1 className="perfil-nome-usuario">{usuario.name}</h1>
               <p className="perfil-subtitulo">
@@ -560,7 +607,7 @@ export default function Profile() {
               <button
                 type="button"
                 className="perfil-btn-editar-perfil"
-                onClick={() => abrirEdicaoPerfil}
+                onClick={abrirEdicaoPerfil}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

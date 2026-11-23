@@ -17,6 +17,7 @@ class StorePostagemRequest extends FormRequest
             'titulo' => ['required', 'string', 'max:120'],
             'conteudo' => ['required', 'string', 'max:5000'],
             'url_anexo' => ['nullable', 'url', 'max:2048'],
+            'anexo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'usuario_id' => ['prohibited'],
             'data_publicacao' => ['prohibited'],
             'status' => ['prohibited'],

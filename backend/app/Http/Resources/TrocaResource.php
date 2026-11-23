@@ -23,6 +23,7 @@ class TrocaResource extends JsonResource
                 'id' => $outro->id,
                 'name' => $outro->name,
                 'profession' => $outro->profession,
+                'avatar_url' => $outro->avatar_url,
             ],
             'meu_servico' => ['id' => $meuServico->id, 'titulo' => $meuServico->titulo],
             'servico_do_outro' => ['id' => $servicoDoOutro->id, 'titulo' => $servicoDoOutro->titulo],

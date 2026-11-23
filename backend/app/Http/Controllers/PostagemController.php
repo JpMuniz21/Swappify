@@ -23,16 +23,23 @@ class PostagemController extends Controller
     }
 
     public function store(StorePostagemRequest $request): JsonResponse
-    {
-        $postagem = $request->user()->postagens()->create(
-            $request->validated() + ['data_publicacao' => now(), 'status' => 'ativa']
-        );
+{
+    $dados = $request->safe()->except('anexo');
 
-        return response()->json([
-            'message' => 'Postagem criada com sucesso.',
-            'data' => new PostagemResource($postagem->load('usuario')),
-        ], 201);
+    if ($request->hasFile('anexo')) {
+        $caminho = $request->file('anexo')->store('postagens', 'public');
+        $dados['url_anexo'] = asset('storage/'.$caminho);
     }
+
+    $postagem = $request->user()->postagens()->create(
+        $dados + ['data_publicacao' => now(), 'status' => 'ativa']
+    );
+
+    return response()->json([
+        'message' => 'Postagem criada com sucesso.',
+        'data' => new PostagemResource($postagem->load('usuario')),
+    ], 201);
+}
 
     public function show(Postagem $postagem): PostagemResource
     {
