@@ -178,3 +178,46 @@
   font-size: 0.85rem;
   text-align: center;
 }
+
+/* aviso de favorito adicionado */
+.match-favorito-texto {
+  margin: 0 0 8px;
+  color: #4a4453;
+  line-height: 1.5;
+}
+
+.match-favorito-texto ~ .modal-footer .match-esgotado-btn {
+  padding: 8px 22px;
+}
+
+/* seta direita com título "Match 👍" */
+.match-nav-btn--match {
+  width: auto;
+  padding: 0 14px 0 18px;
+  gap: 6px;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  /* no celular empilha o texto para não apertar o card */
+  .match-nav-btn--match {
+    width: 52px;
+    height: auto;
+    padding: 8px 4px;
+    flex-direction: column;
+    gap: 2px;
+    border-radius: 16px;
+    font-size: 0.72rem;
+  }
+
+  .match-nav-btn-texto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+  }
+}

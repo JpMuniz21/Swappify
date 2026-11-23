@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import MatchCard from '../../components/MatchCard/MatchCard';
 import MatchAcoes from '../../components/MatchAcoes/MatchAcoes';
 import MatchOverlay from '../../components/MatchOverlay/MatchOverlay';
+import Modal from '../../components/Modal/Modal';
 import { logout } from '../../services/authService';
 import { listarCatalogoServicos, listarFavoritos, favoritarServico } from '../../services/matchService';
 import './Match.css';
@@ -40,6 +41,7 @@ export default function Match() {
   const [historico, setHistorico] = useState([]); // [{ indice, tipo: 'like' | 'pass' }]
   const [animacao, setAnimacao] = useState(null); // 'like' | 'pass' | 'entrada'
   const [matchAtual, setMatchAtual] = useState(null); // perfil do match confirmado
+  const [favoritoAdicionado, setFavoritoAdicionado] = useState(null); // perfil recém-curtido (aviso)
 
   // Mostra serviços de outras pessoas que ainda não foram favoritados.
   useEffect(() => {
@@ -76,8 +78,9 @@ export default function Match() {
     }, 380);
   }, [indiceAtual]);
 
-  // curtir = favoritar o serviço; se for recíproco, a API cria o match
-  async function handleLike() {
+  // curtir = favoritar o serviço; se for recíproco, a API cria o match.
+  // origem 'match' (seta →) mostra o aviso de match; 'favorito' (coração) o aviso de favoritos.
+  async function handleLike(origem = 'favorito') {
     if (!perfilAtual || curtindo) return;
     setCurtindo(true);
     setAviso('');
@@ -85,8 +88,12 @@ export default function Match() {
       const resposta = await favoritarServico(perfilAtual.servicoId);
       if (resposta?.meta?.match_criado) {
         setMatchAtual({ ...perfilAtual, matchId: resposta.meta.match_id });
+      } else if (origem === 'match') {
+        // ainda não é recíproco: avisa que o match foi enviado
+        setMatchAtual({ ...perfilAtual, pendente: true });
       } else {
-        avancar('like');
+        // mostra o aviso; o próximo perfil aparece quando o modal é fechado
+        setFavoritoAdicionado(perfilAtual);
       }
     } catch (erro) {
       if (erro.status === 401 || erro.status === 419) {
@@ -115,6 +122,12 @@ export default function Match() {
     setIndiceAtual(ultimo.indice);
     setTimeout(() => setAnimacao(null), 400);
   }
+
+  // fecha o aviso de favorito e avanca para o proximo perfil
+  const handleFecharFavorito = useCallback(() => {
+    setFavoritoAdicionado(null);
+    avancar('like');
+  }, [avancar]);
 
   // fecha o overlay de match e avanca
   function handleFecharMatch() {
@@ -199,7 +212,7 @@ export default function Match() {
         <MatchAcoes
           onVoltar={handleVoltar}
           onPass={handlePass}
-          onLike={handleLike}
+          onLike={() => handleLike('favorito')}
           onConversar={() => navigate('/chat')}
           podevoltar={podevoltar}
         />
@@ -207,7 +220,7 @@ export default function Match() {
     );
   }
 
-  const acoesBloqueadas = carregando || Boolean(erroCarregar) || semMaisPerfis || curtindo;
+  const acoesBloqueadas = carregando || Boolean(erroCarregar) || semMaisPerfis || curtindo || Boolean(favoritoAdicionado);
 
   return (
     <div className="match-pagina">
@@ -240,13 +253,14 @@ export default function Match() {
           <button
             type="button"
             id="btn-match-nav-proximo"
-            className="match-nav-btn match-nav-btn--direita"
-            onClick={handleLike}
+            className="match-nav-btn match-nav-btn--direita match-nav-btn--match"
+            onClick={() => handleLike('match')}
             disabled={acoesBloqueadas}
-            aria-label="Curtir perfil"
-            title="Curtir"
+            aria-label="Dar match"
+            title="Dar match"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <span className="match-nav-btn-texto">Match <span aria-hidden="true">👍</span></span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
@@ -257,10 +271,32 @@ export default function Match() {
       {matchAtual && (
         <MatchOverlay
           perfil={matchAtual}
+          pendente={Boolean(matchAtual.pendente)}
           onConversar={handleConversarMatch}
           onContinuar={handleFecharMatch}
         />
       )}
+
+      {/* aviso: perfil adicionado aos favoritos (curtida sem match) */}
+      <Modal
+        isOpen={Boolean(favoritoAdicionado)}
+        onClose={handleFecharFavorito}
+        title="Adicionado aos favoritos"
+      >
+        <p className="match-favorito-texto">
+          O serviço <strong>{favoritoAdicionado?.servico?.titulo}</strong> de{' '}
+          <strong>{favoritoAdicionado?.nome}</strong> foi adicionado aos seus favoritos.
+          Se essa pessoa também curtir um serviço seu, vocês dão match!
+        </p>
+        <div className="modal-footer">
+          <button type="button" className="modal-btn-cancel" onClick={() => navigate('/favoritos')}>
+            Ver favoritos
+          </button>
+          <button type="button" className="match-esgotado-btn" onClick={handleFecharFavorito} autoFocus>
+            Continuar
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
