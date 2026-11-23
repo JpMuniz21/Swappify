@@ -8,6 +8,7 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\ServicoProcuradoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController; // Registra os endereços HTTP.
+use App\Http\Controllers\AgendamentoController;
 
 // Este arquivo é incluído por web.php para ter cookies, sessão e proteção CSRF.
 // FRONTEND: as URLs começam em http://localhost:8000/api; consultar docs/usuarios.md.
@@ -43,5 +44,9 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         Route::post('/conversas/{idMatch}/mensagens', [ChatController::class, 'enviar'])
             ->whereNumber('idMatch');
         Route::post('/logout', [AccountController::class, 'logout']); // Encerra a sessão atual.
+        Route::apiResource('agendamentos', AgendamentoController::class)
+            ->parameters(['agendamentos' => 'agendamento'])
+            ->only(['index', 'store', 'update']);
     });
+
 });
