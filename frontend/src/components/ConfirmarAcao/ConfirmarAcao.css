@@ -1,0 +1,18 @@
+.agenda-confirmar {
+  max-width: 380px;
+}
+
+.agenda-confirmar h2 {
+  margin-bottom: 10px;
+}
+
+.agenda-confirmar-texto {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.agenda-confirmar-perigo {
+  background: #c0392b;
+}
