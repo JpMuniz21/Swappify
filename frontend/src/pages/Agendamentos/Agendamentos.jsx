@@ -168,6 +168,19 @@ export default function Agendamentos() {
     });
   }, [carregando, trocas, params, setParams]);
 
+  // Link vindo de uma notificação: /agendamentos?dia=2026-11-24 abre o calendário nesse dia.
+  useEffect(() => {
+    const dia = params.get('dia');
+    if (!dia) return;
+
+    setParams({}, { replace: true });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return;
+
+    const [ano, mesDoLink, diaDoMes] = dia.split('-').map(Number);
+    setMes(new Date(ano, mesDoLink - 1, 1));
+    setSelecionado(new Date(ano, mesDoLink - 1, diaDoMes));
+  }, [params, setParams]);
+
   useEffect(() => {
     let cancelado = false;
     Promise.all([listarAgendamentos(), listarTrocasAtivas().catch(() => [])])

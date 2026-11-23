@@ -23,6 +23,10 @@ class AgendamentoResource extends JsonResource
             'status' => $this->status,
             'observacao' => $this->observacao,
             'criado_por_mim' => $this->criado_por_id === $meuId,
+            // null enquanto ninguém cancelou; true/false depois (quem cancelou foi eu?)
+            'cancelado_por_mim' => $this->cancelado_por_id === null ? null : $this->cancelado_por_id === $meuId,
+            // data da última mudança (as notificações usam para ordenar e marcar como lida)
+            'atualizado_em' => $this->updated_at?->toIso8601String(),
             'parceiro' => ['id' => $outro->id, 'nome' => $outro->name],
             'ofereco' => $meuServico->titulo,
             'recebo' => $servicoDoOutro->titulo,
