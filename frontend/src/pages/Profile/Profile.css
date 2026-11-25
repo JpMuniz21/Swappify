@@ -697,6 +697,13 @@
   opacity: 1;
 }
 
+/* telas de toque não têm hover: mostra o título sempre */
+@media (hover: none) {
+  .portfolio-foto-overlay {
+    opacity: 1;
+  }
+}
+
 /* secao de avaliacoes */
 .perfil-avaliacoes-secao {
   margin-top: 36px;
