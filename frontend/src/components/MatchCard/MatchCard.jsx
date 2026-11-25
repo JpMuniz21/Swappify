@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './MatchCard.css';
 
 /**
@@ -12,6 +13,7 @@ export default function MatchCard({ perfil, animacao }) {
   if (!perfil) return null;
 
   const {
+    usuarioId,
     nome,
     profissao,
     localizacao,
@@ -71,6 +73,11 @@ export default function MatchCard({ perfil, animacao }) {
                 <span className="match-card-local"> | {localizacao}</span>
               )}
             </p>
+            {usuarioId && (
+              <Link to={`/perfil/${usuarioId}`} className="match-card-ver-perfil">
+                Ver perfil completo →
+              </Link>
+            )}
           </div>
         </div>
 

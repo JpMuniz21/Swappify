@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import TextoComDatas from "../../components/TextoComDatas/TextoComDatas";
 import {
@@ -167,7 +167,13 @@ export default function Chat() {
             <>
               <div className="janela__topo">
                 <Avatar nome={conversaAtiva.outro?.nome} url={conversaAtiva.outro?.avatar_url} />
-                <span>{conversaAtiva.outro?.nome}</span>
+                {conversaAtiva.outro?.id ? (
+                  <Link to={`/perfil/${conversaAtiva.outro.id}`} className="janela__topo-link" title="Ver perfil">
+                    {conversaAtiva.outro?.nome}
+                  </Link>
+                ) : (
+                  <span>{conversaAtiva.outro?.nome}</span>
+                )}
               </div>
 
               <div className="janela__mensagens">

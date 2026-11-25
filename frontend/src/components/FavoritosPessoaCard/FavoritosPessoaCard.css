@@ -220,3 +220,13 @@
   border-color: #e87a70;
   color: #b02819;
 }
+
+/* nome leva ao perfil publico */
+.fav-pessoa-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fav-pessoa-link:hover {
+  text-decoration: underline;
+}
