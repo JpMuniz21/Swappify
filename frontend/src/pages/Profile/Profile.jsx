@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TAMANHO_MAXIMO_ORIGINAL, TEXTO_TAMANHO_MAXIMO } from '../../utils/reduzirImagem';
 import Navbar from '../../components/Navbar/Navbar';
 import Modal from '../../components/Modal/Modal';
 import ServiceSelectModal from '../../components/ServiceSelectModal/ServiceSelectModal';
@@ -219,8 +220,8 @@ export default function Profile() {
       setErroFoto('Use uma imagem JPG, PNG ou WEBP.');
       return;
     }
-    if (arquivo.size > 2 * 1024 * 1024) {
-      setErroFoto('A imagem pode ter no máximo 2 MB.');
+    if (arquivo.size > TAMANHO_MAXIMO_ORIGINAL) {
+      setErroFoto(`A imagem pode ter no máximo ${TEXTO_TAMANHO_MAXIMO}.`);
       return;
     }
     setErroFoto('');

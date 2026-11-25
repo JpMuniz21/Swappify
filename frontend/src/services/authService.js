@@ -1,3 +1,5 @@
+import { reduzirImagensDoFormulario } from "../utils/reduzirImagem";
+
 const API_URL = import.meta.env?.VITE_API_URL ?? "http://localhost:8000/api";
 
 async function lerResposta(resposta) {
@@ -36,6 +38,9 @@ async function buscarTokenCsrf() {
 export async function requisitar(rota, method = "GET", dados, tentarDeNovo = true) {
   const headers = { Accept: "application/json" };
   const ehArquivo = dados instanceof FormData;
+  // todo envio de arquivo passa por aqui (foto de perfil, portfólio, feed): reduz as imagens antes.
+  // Na repetição (419) os dados já vêm reduzidos e não são processados de novo.
+  if (ehArquivo && tentarDeNovo) dados = await reduzirImagensDoFormulario(dados);
   if (method !== "GET") {
     const cookie = lerCookieXsrf();
     if (cookie) headers["X-XSRF-TOKEN"] = cookie;
