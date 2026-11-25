@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './ServiceSelectModal.css';
 
 // catalogo base de servicos
@@ -18,7 +18,7 @@ const CATALOGO_SERVICOS = [
   {
     id: 'educacao-aulas',
     titulo: 'Educação & Aulas',
-    descricao: 'Aulas de idiomas, reforço escolar e aprendizado do básico ao avançado.',
+    descricao: 'Reforço escolar, preparação para provas e aprendizado do básico ao avançado.',
     iconeTipo: 'aulas',
   },
   {
@@ -47,9 +47,57 @@ const CATALOGO_SERVICOS = [
   },
   {
     id: 'produtos-saude-pets',
-    titulo: 'Produtos de saúde Pets',
+    titulo: 'Cuidados com Pets', // id antigo mantido: é o código já salvo nos serviços
     descricao: 'Cuidados com pets, passeios, adestramento e apoio diário.',
     iconeTipo: 'pets',
+  },
+  {
+    id: 'fotografia',
+    titulo: 'Fotografia',
+    descricao: 'Ensaios, cobertura de eventos e fotos de produtos.',
+    iconeTipo: 'fotografia',
+  },
+  {
+    id: 'musica',
+    titulo: 'Música',
+    descricao: 'Aulas de instrumento, canto e produção musical.',
+    iconeTipo: 'musica',
+  },
+  {
+    id: 'idiomas',
+    titulo: 'Idiomas',
+    descricao: 'Aulas e conversação em inglês, espanhol e outros idiomas.',
+    iconeTipo: 'idiomas',
+  },
+  {
+    id: 'beleza-estetica',
+    titulo: 'Beleza & Estética',
+    descricao: 'Cabelo, maquiagem, unhas e design de sobrancelhas.',
+    iconeTipo: 'beleza',
+  },
+  {
+    id: 'culinaria',
+    titulo: 'Culinária',
+    descricao: 'Aulas de cozinha, confeitaria e preparo de refeições.',
+    iconeTipo: 'culinaria',
+  },
+  {
+    id: 'suporte-informatica',
+    titulo: 'Suporte em Informática',
+    descricao: 'Formatação, instalação de programas e ajuda com computador e celular.',
+    iconeTipo: 'informatica',
+  },
+  {
+    id: 'artesanato-costura',
+    titulo: 'Artesanato & Costura',
+    descricao: 'Ajustes de roupas, crochê e peças feitas à mão.',
+    iconeTipo: 'artesanato',
+  },
+  {
+    id: 'textos-revisao',
+    titulo: 'Textos & Revisão',
+    descricao: 'Revisão, redação, formatação de trabalhos e tradução.',
+    iconeTipo: 'textos',
   },
   {
     id: 'explorar-servicos',
@@ -67,8 +115,13 @@ const CATALOGO_SERVICOS = [
   },
 ];
 
-function IconeServico({ tipo }) {
-  switch (tipo) {
+// id do catálogo ("design-grafico") → tipo de ícone ("design"); o perfil guarda o id
+const ICONE_POR_ID = Object.fromEntries(CATALOGO_SERVICOS.map((s) => [s.id, s.iconeTipo]));
+
+// Ícone de um serviço do catálogo. Aceita o tipo do ícone ou o id do catálogo.
+// Também usado nos cards do perfil; "padrao" é o que aparece se o tipo não for conhecido.
+export function IconeServico({ tipo, padrao = null }) {
+  switch (ICONE_POR_ID[tipo] ?? tipo) {
     case 'design':
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -124,6 +177,73 @@ function IconeServico({ tipo }) {
           <path d="m8.5 8.5 7 7" />
         </svg>
       );
+    case 'fotografia':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+          <circle cx="12" cy="13" r="3" />
+        </svg>
+      );
+    case 'musica':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
+      );
+    case 'idiomas':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m5 8 6 6" />
+          <path d="m4 14 6-6 2-3" />
+          <path d="M2 5h12" />
+          <path d="M7 2h1" />
+          <path d="m22 22-5-10-5 10" />
+          <path d="M14 18h6" />
+        </svg>
+      );
+    case 'beleza':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+          <path d="M19 17v4M17 19h4" />
+        </svg>
+      );
+    case 'culinaria':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.14-7.59 5 5 0 0 0-9.18 0 4 4 0 0 0-2.14 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1Z" />
+          <path d="M6 17h12" />
+        </svg>
+      );
+    case 'informatica':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+        </svg>
+      );
+    case 'artesanato':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="6" cy="6" r="3" />
+          <circle cx="6" cy="18" r="3" />
+          <line x1="20" y1="4" x2="8.12" y2="15.88" />
+          <line x1="14.47" y1="14.48" x2="20" y2="20" />
+          <line x1="8.12" y1="8.12" x2="12" y2="12" />
+        </svg>
+      );
+    case 'textos':
+      return (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+      );
     case 'explorar':
       return (
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -139,7 +259,7 @@ function IconeServico({ tipo }) {
         </svg>
       );
     default:
-      return null;
+      return padrao;
   }
 }
 
@@ -155,11 +275,15 @@ export default function ServiceSelectModal({
   const [criandoPersonalizado, setCriandoPersonalizado] = useState(false);
   const [novoTitulo, setNovoTitulo] = useState('');
   const [novaDescricao, setNovaDescricao] = useState('');
+  const buscaRef = useRef(null); // o card "Explorar" leva o cursor para a busca
 
   // bloqueia o scroll da pagina e fecha com tecla esc
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key !== 'Escape') return;
+      // com o formulário de personalizado aberto, o Esc fecha só ele
+      if (criandoPersonalizado) setCriandoPersonalizado(false);
+      else onClose();
     }
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -169,7 +293,7 @@ export default function ServiceSelectModal({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, criandoPersonalizado]);
 
   if (!isOpen) return null;
 
@@ -182,14 +306,19 @@ export default function ServiceSelectModal({
     ? 'Pesquise um serviço que combine com você'
     : 'Pesquise um serviço que você precisa.';
 
+  // a busca filtra só as categorias prontas; "Explorar" some durante a busca
+  // e "Criar personalizado" fica sempre, para quando nada combinar
+  const termo = termoBusca.trim().toLowerCase();
   const cardsFiltrados = CATALOGO_SERVICOS.filter((servico) => {
-    if (!termoBusca.trim()) return true;
-    const termo = termoBusca.toLowerCase();
+    if (!termo) return true;
+    if (servico.acaoEspecial === 'personalizado') return true;
+    if (servico.acaoEspecial === 'explorar') return false;
     return (
       servico.titulo.toLowerCase().includes(termo) ||
       servico.descricao.toLowerCase().includes(termo)
     );
   });
+  const nenhumEncontrado = Boolean(termo) && cardsFiltrados.every((s) => s.acaoEspecial);
 
   function isSelecionado(servicoId) {
     return servicosSelecionados.some(
@@ -199,11 +328,14 @@ export default function ServiceSelectModal({
 
   function handleCardClick(servico) {
     if (servico.acaoEspecial === 'personalizado') {
-      setCriandoPersonalizado(!criandoPersonalizado);
+      setCriandoPersonalizado(true);
       return;
     }
     if (servico.acaoEspecial === 'explorar') {
+      // leva até a busca e deixa o cursor nela, pronto para pesquisar no catálogo
       setTermoBusca('');
+      buscaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      buscaRef.current?.focus({ preventScroll: true });
       return;
     }
     onToggleServico(servico);
@@ -291,48 +423,67 @@ export default function ServiceSelectModal({
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
+            ref={buscaRef}
             type="search"
             className="modal-busca-input"
+            aria-label={placeholderBusca}
             placeholder={placeholderBusca}
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
           />
         </div>
 
-        {/* formulario de servico personalizado */}
+        {/* formulario de servico personalizado: flutua centralizado na tela, em qualquer ponto da rolagem */}
         {criandoPersonalizado && (
-          <form onSubmit={handleSalvarPersonalizado} className="modal-custom-form-wrapper">
-            <h4 className="modal-custom-form-title">Criar serviço personalizado</h4>
-            <div className="modal-custom-form-inputs">
-              <input
-                type="text"
-                required
-                placeholder="Nome do serviço (ex: Aulas de Violão)"
-                maxLength={50}
-                value={novoTitulo}
-                onChange={(e) => setNovoTitulo(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Breve descrição do que você oferece ou procura"
-                maxLength={150}
-                value={novaDescricao}
-                onChange={(e) => setNovaDescricao(e.target.value)}
-              />
-            </div>
-            <div className="modal-custom-form-acoes">
-              <button
-                type="button"
-                className="modal-custom-btn-cancel"
-                onClick={() => setCriandoPersonalizado(false)}
-              >
-                Cancelar
-              </button>
-              <button type="submit" className="modal-custom-btn-salvar">
-                Adicionar ao perfil
-              </button>
-            </div>
-          </form>
+          <div className="modal-custom-overlay" onClick={() => setCriandoPersonalizado(false)}>
+            <form
+              onSubmit={handleSalvarPersonalizado}
+              className="modal-custom-form-wrapper"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-custom-form-title"
+            >
+              <h4 id="modal-custom-form-title" className="modal-custom-form-title">Criar serviço personalizado</h4>
+              <div className="modal-custom-form-inputs">
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  aria-label="Nome do serviço"
+                  placeholder="Nome do serviço (ex: Aulas de Violão)"
+                  maxLength={50}
+                  value={novoTitulo}
+                  onChange={(e) => setNovoTitulo(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Breve descrição do que você oferece ou procura"
+                  maxLength={150}
+                  value={novaDescricao}
+                  onChange={(e) => setNovaDescricao(e.target.value)}
+                />
+              </div>
+              <div className="modal-custom-form-acoes">
+                <button
+                  type="button"
+                  className="modal-custom-btn-cancel"
+                  onClick={() => setCriandoPersonalizado(false)}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="modal-custom-btn-salvar">
+                  Adicionar ao perfil
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {nenhumEncontrado && (
+          <p className="modal-busca-vazia" role="status">
+            Nenhuma categoria encontrada para "{termoBusca.trim()}". Você pode criar um serviço personalizado.
+          </p>
         )}
 
         {/* grade de servicos */}

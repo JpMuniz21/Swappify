@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Modal from '../../components/Modal/Modal';
-import ServiceSelectModal from '../../components/ServiceSelectModal/ServiceSelectModal';
+import ConfirmarAcao from '../../components/ConfirmarAcao/ConfirmarAcao';
+import ServiceSelectModal, { IconeServico } from '../../components/ServiceSelectModal/ServiceSelectModal';
 import { consultarPerfil, atualizarPerfil, logout, enviarFotoPerfil } from '../../services/authService';
 import {
   listarCategorias, criarServico, excluirServico, adicionarProcurado, removerProcurado,
 } from '../../services/servicoService';
 import avatarPadrao from '../../assets/avatar-padrao.svg';
-import { adicionarFotoPortfolio, removerFotoPortfolio } from '../../services/portfolioService';
+import { adicionarFotoPortfolio, editarFotoPortfolio, removerFotoPortfolio } from '../../services/portfolioService';
 import './Profile.css';
 
 // dados iniciais do perfil
@@ -46,6 +47,14 @@ const CATEGORIA_POR_CODIGO = {
   'personal-fitness': 'Saúde e bem-estar',
   'servicos-gerais': 'Serviços gerais',
   'produtos-saude-pets': 'Pets',
+  fotografia: 'Criatividade',
+  musica: 'Educação',
+  idiomas: 'Educação',
+  'beleza-estetica': 'Saúde e bem-estar',
+  culinaria: 'Outros',
+  'suporte-informatica': 'Tecnologia',
+  'artesanato-costura': 'Criatividade',
+  'textos-revisao': 'Educação',
   personalizado: 'Outros',
 };
 
@@ -68,7 +77,16 @@ function portfolioDaApi(item) {
 
 const LIMITE_PORTFOLIO = 12; // mesmo limite do backend
 const LIMITE_TITULO_PORTFOLIO = 80;
+const PORTFOLIO_POR_PAGINA = 4; // uma fileira por página
+const CARD_ADICIONAR = { id: 'adicionar' }; // o "+" ocupa uma vaga na fileira
 const FORM_PORTFOLIO_INICIAL = { arquivo: null, preview: '', titulo: '' };
+
+// Mesmas regras do backend; devolve a mensagem de erro ou '' se a imagem serve.
+function erroImagemPortfolio(arquivo) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) return 'Use uma imagem JPG, PNG ou WEBP.';
+  if (arquivo.size > 4 * 1024 * 1024) return 'A imagem pode ter no máximo 4 MB.';
+  return '';
+}
 
 // Item de "O que eu procuro" vindo da API → formato dos cards do perfil.
 function procuradoDaApi(item) {
@@ -103,52 +121,17 @@ function mensagemDeErro(erro, padrao) {
   return Object.values(erro?.errors ?? {})[0]?.[0] ?? erro?.message ?? padrao;
 }
 
-// icone do card de servico no perfil
-function IconeCardServico({ tipo }) {
+// icone padrao para servicos sem icone conhecido
+const ICONE_SERVICO_PADRAO = (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+    <path d="m8.5 8.5 7 7" />
+  </svg>
+);
 
-  switch (tipo) {
-    case 'video':
-    case 'edicao-video':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <rect x="2" y="5" width="13" height="14" rx="2" />
-          <polygon points="17 8 22 5 22 19 17 16 17 8" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case 'sites':
-    case 'criacao-sites':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg>
-      );
-    case 'design':
-    case 'design-grafico':
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m14 12 5.5-5.5a2.12 2.12 0 1 0-3-3L11 9" />
-          <path d="M12 14 6.5 19.5a2.12 2.12 0 1 1-3-3L9 11" />
-          <path d="m3 3 18 18" />
-        </svg>
-      );
-    case 'aulas':
-    case 'educacao-aulas':
-      return (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-          <path d="M6 12v5c3 3 9 3 12 0v-5" />
-        </svg>
-      );
-    default:
-      // icone padrao de saude e bem-estar
-      return (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
-          <path d="m8.5 8.5 7 7" />
-        </svg>
-      );
-  }
+// icone do card de servico no perfil: os mesmos do catalogo do ServiceSelectModal
+function IconeCardServico({ tipo }) {
+  return <IconeServico tipo={tipo} padrao={ICONE_SERVICO_PADRAO} />;
 }
 
 export default function Profile() {
@@ -179,6 +162,14 @@ export default function Profile() {
   const [portfolio, setPortfolio] = useState([]);
   const [modalPortfolioAberto, setModalPortfolioAberto] = useState(false);
   const [modalNovaFotoAberto, setModalNovaFotoAberto] = useState(false);
+  const [paginaPortfolio, setPaginaPortfolio] = useState(1);
+  const [direcaoPortfolio, setDirecaoPortfolio] = useState('proxima'); // lado da animação ao trocar de página
+  const [menuPortfolioId, setMenuPortfolioId] = useState(null); // card com o menu "⋯" aberto (telas de toque)
+  const [edicaoPortfolio, setEdicaoPortfolio] = useState(null); // { id, titulo } da foto sendo editada
+  const [salvandoEdicaoPortfolio, setSalvandoEdicaoPortfolio] = useState(false);
+  const [erroEdicaoPortfolio, setErroEdicaoPortfolio] = useState('');
+  const [exclusaoPortfolio, setExclusaoPortfolio] = useState(null); // item aguardando confirmação para excluir
+  const [exclusaoServico, setExclusaoServico] = useState(null); // serviço oferecido aguardando confirmação
   const [formPortfolio, setFormPortfolio] = useState(FORM_PORTFOLIO_INICIAL);
   const [enviandoPortfolio, setEnviandoPortfolio] = useState(false);
   const [erroPortfolio, setErroPortfolio] = useState('');
@@ -402,7 +393,7 @@ export default function Profile() {
 
   function handleAdicionarFotoPortfolio() {
     if (portfolio.length >= LIMITE_PORTFOLIO) {
-      setErroPortfolio(`Seu portfólio pode ter no máximo ${LIMITE_PORTFOLIO} fotos.`);
+      setErroPortfolio(`Seu portfólio pode ter no máximo ${LIMITE_PORTFOLIO} itens.`);
       setModalPortfolioAberto(true);
       return;
     }
@@ -414,15 +405,9 @@ export default function Profile() {
     const arquivo = e.target.files?.[0];
     e.target.value = '';
     if (!arquivo) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) {
-      setErroPortfolio('Use uma imagem JPG, PNG ou WEBP.');
-      return;
-    }
-    if (arquivo.size > 4 * 1024 * 1024) {
-      setErroPortfolio('A imagem pode ter no máximo 4 MB.');
-      return;
-    }
-    setErroPortfolio('');
+    const erro = erroImagemPortfolio(arquivo);
+    setErroPortfolio(erro);
+    if (erro) return;
     setFormPortfolio((prev) => {
       if (prev.preview) URL.revokeObjectURL(prev.preview);
       return { ...prev, arquivo, preview: URL.createObjectURL(arquivo) };
@@ -440,22 +425,76 @@ export default function Profile() {
     try {
       const resposta = await adicionarFotoPortfolio(formPortfolio.arquivo, titulo);
       setPortfolio((prev) => [...prev, portfolioDaApi(resposta.data)]);
+      setDirecaoPortfolio('proxima');
+      setPaginaPortfolio(Infinity); // vai para a última página, onde a foto nova aparece
       fecharNovaFoto();
     } catch (erro) {
-      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível enviar a foto.'));
+      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível adicionar o item.'));
     } finally {
       setEnviandoPortfolio(false);
     }
   }
 
-  async function handleRemoverFotoPortfolio(id) {
-    if (!window.confirm('Remover esta foto do portfólio?')) return;
+  function handleAbrirEdicaoPortfolio(item) {
+    setMenuPortfolioId(null);
+    setErroEdicaoPortfolio('');
+    // arquivo/preview só existem se a pessoa escolher uma imagem nova
+    setEdicaoPortfolio({ id: item.id, titulo: item.titulo, imagemAtual: item.imagem, arquivo: null, preview: '' });
+  }
+
+  function fecharEdicaoPortfolio() {
+    if (edicaoPortfolio?.preview) URL.revokeObjectURL(edicaoPortfolio.preview);
+    setEdicaoPortfolio(null);
+  }
+
+  function handleTrocarImagemEdicao(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!arquivo) return;
+    const erro = erroImagemPortfolio(arquivo);
+    setErroEdicaoPortfolio(erro);
+    if (erro) return;
+    setEdicaoPortfolio((prev) => {
+      if (prev.preview) URL.revokeObjectURL(prev.preview);
+      return { ...prev, arquivo, preview: URL.createObjectURL(arquivo) };
+    });
+  }
+
+  async function handleSalvarEdicaoPortfolio(e) {
+    e.preventDefault();
+    const titulo = edicaoPortfolio.titulo.trim();
+    if (!titulo) {
+      setErroEdicaoPortfolio('Dê um título para o item.');
+      return;
+    }
+    setSalvandoEdicaoPortfolio(true);
+    try {
+      const resposta = await editarFotoPortfolio(edicaoPortfolio.id, titulo, edicaoPortfolio.arquivo);
+      const atualizado = portfolioDaApi(resposta.data);
+      setPortfolio((prev) => prev.map((p) => (p.id === atualizado.id ? atualizado : p)));
+      fecharEdicaoPortfolio();
+    } catch (erro) {
+      setErroEdicaoPortfolio(mensagemDeErro(erro, 'Não foi possível salvar as alterações.'));
+    } finally {
+      setSalvandoEdicaoPortfolio(false);
+    }
+  }
+
+  // pede confirmação na janela do próprio site (ConfirmarAcao), não no window.confirm
+  function handleRemoverFotoPortfolio(item) {
+    setMenuPortfolioId(null);
+    setExclusaoPortfolio(item);
+  }
+
+  async function confirmarRemocaoPortfolio() {
+    const { id } = exclusaoPortfolio;
+    setExclusaoPortfolio(null);
     setErroPortfolio('');
     try {
       await removerFotoPortfolio(id);
       setPortfolio((prev) => prev.filter((p) => p.id !== id));
     } catch (erro) {
-      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível remover a foto.'));
+      setErroPortfolio(mensagemDeErro(erro, 'Não foi possível excluir o item.'));
     }
   }
 
@@ -512,14 +551,15 @@ export default function Profile() {
     }
   }
 
-  async function removerServicoOferecido(existente) {
+  // pede confirmação na janela do site; a exclusão de fato fica em confirmarRemocaoServico
+  function removerServicoOferecido(existente) {
     if (salvandoServico) return;
-    const ok = window.confirm(
-      `Remover "${existente.titulo}" dos serviços que você oferece? `
-      + 'Favoritos, matches e conversas ligados a este serviço também serão apagados.'
-    );
-    if (!ok) return;
+    setExclusaoServico(existente);
+  }
 
+  async function confirmarRemocaoServico() {
+    const existente = exclusaoServico;
+    setExclusaoServico(null);
     setSalvandoServico(true);
     setErroServicos('');
     try {
@@ -603,6 +643,31 @@ export default function Profile() {
 
   function handleAdicionarPersonalizadoProcurado(novoServico) {
     salvarProcurado({ ...novoServico, codigo: 'personalizado' });
+  }
+
+  // menu "⋯" do card fecha ao tocar fora dele (os cliques dentro param no próprio card)
+  useEffect(() => {
+    if (menuPortfolioId === null) return undefined;
+    const fechar = () => setMenuPortfolioId(null);
+    document.addEventListener('click', fechar);
+    return () => document.removeEventListener('click', fechar);
+  }, [menuPortfolioId]);
+
+  // paginacao do portfolio: 4 cards por pagina, contando o "+" enquanto houver vaga
+  const cardsPortfolio = portfolio.length < LIMITE_PORTFOLIO ? [...portfolio, CARD_ADICIONAR] : portfolio;
+  const totalPaginasPortfolio = Math.max(1, Math.ceil(cardsPortfolio.length / PORTFOLIO_POR_PAGINA));
+  // limita aqui (e não no estado) para a página continuar válida depois de excluir fotos
+  const paginaAtualPortfolio = Math.min(paginaPortfolio, totalPaginasPortfolio);
+  const cardsPaginaPortfolio = cardsPortfolio.slice(
+    (paginaAtualPortfolio - 1) * PORTFOLIO_POR_PAGINA,
+    paginaAtualPortfolio * PORTFOLIO_POR_PAGINA,
+  );
+
+  function irParaPaginaPortfolio(numero) {
+    if (numero === paginaAtualPortfolio) return;
+    setMenuPortfolioId(null);
+    setDirecaoPortfolio(numero > paginaAtualPortfolio ? 'proxima' : 'anterior');
+    setPaginaPortfolio(numero);
   }
 
   return (
@@ -952,8 +1017,8 @@ export default function Profile() {
                   type="button"
                   className="perfil-portfolio-card-vazio"
                   onClick={handleAdicionarFotoPortfolio}
-                  title="Clique para adicionar foto ao portfólio"
-                  aria-label="Adicionar foto ao portfólio"
+                  title="Clique para adicionar um item ao portfólio"
+                  aria-label="Adicionar item ao portfólio"
                 >
                   <div className="perfil-portfolio-circulo-plus">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -968,35 +1033,136 @@ export default function Profile() {
               </div>
             ) : (
               /* fotos do portfolio */
-              <div className="perfil-portfolio-grade">
-                {portfolio.map((item) => (
-                  <div
-                    key={item.id}
-                    className="portfolio-foto-card"
-                    onClick={() => setModalPortfolioAberto(true)}
-                    title={item.titulo}
-                  >
-                    <img src={item.imagem} alt={item.titulo} className="portfolio-foto-img" />
-                    <div className="portfolio-foto-overlay">
-                      <span>{item.titulo}</span>
-                    </div>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  className="perfil-portfolio-card-vazio"
-                  onClick={handleAdicionarFotoPortfolio}
-                  title="Adicionar mais fotos ao portfólio"
-                  aria-label="Adicionar mais fotos ao portfólio"
+              <>
+                {/* key muda a cada página: o React recria a fileira e a animação roda de novo */}
+                <div
+                  key={paginaAtualPortfolio}
+                  className={`perfil-portfolio-grade perfil-portfolio-entrando-${direcaoPortfolio}`}
                 >
-                  <div className="perfil-portfolio-circulo-plus">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                  </div>
-                </button>
-              </div>
+                  {cardsPaginaPortfolio.map((item) => (item === CARD_ADICIONAR ? (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="perfil-portfolio-card-vazio"
+                      onClick={handleAdicionarFotoPortfolio}
+                      title="Adicionar mais itens ao portfólio"
+                      aria-label="Adicionar mais itens ao portfólio"
+                    >
+                      <div className="perfil-portfolio-circulo-plus">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      </div>
+                    </button>
+                  ) : (
+                    <div
+                      key={item.id}
+                      className="portfolio-foto-card"
+                      onClick={() => setModalPortfolioAberto(true)}
+                      title={item.titulo}
+                    >
+                      <img src={item.imagem} alt={item.titulo} className="portfolio-foto-img" />
+                      <div className="portfolio-foto-overlay">
+                        <span>{item.titulo}</span>
+                      </div>
+
+                      {/* ações: no PC aparecem no hover; em telas de toque viram um menu "⋯" */}
+                      <div className="portfolio-foto-acoes" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="portfolio-acao portfolio-acao-mouse"
+                          onClick={() => handleAbrirEdicaoPortfolio(item)}
+                          title="Editar item"
+                          aria-label={`Editar ${item.titulo}`}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          className="portfolio-acao portfolio-acao-mouse portfolio-acao-excluir"
+                          onClick={() => handleRemoverFotoPortfolio(item)}
+                          title="Excluir item"
+                          aria-label={`Excluir ${item.titulo}`}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4h8v2" />
+                            <path d="M19 6l-1 14H6L5 6" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          className="portfolio-acao portfolio-acao-toque"
+                          onClick={() => setMenuPortfolioId((atual) => (atual === item.id ? null : item.id))}
+                          aria-label={`Opções de ${item.titulo}`}
+                          aria-haspopup="menu"
+                          aria-expanded={menuPortfolioId === item.id}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="5" cy="12" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="19" cy="12" r="2" />
+                          </svg>
+                        </button>
+                        {menuPortfolioId === item.id && (
+                          <div className="portfolio-menu" role="menu">
+                            <button type="button" role="menuitem" onClick={() => handleAbrirEdicaoPortfolio(item)}>
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              className="portfolio-menu-excluir"
+                              onClick={() => handleRemoverFotoPortfolio(item)}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )))}
+                </div>
+
+                {totalPaginasPortfolio > 1 && (
+                  <nav className="perfil-portfolio-paginacao" aria-label="Páginas do portfólio">
+                    <button
+                      type="button"
+                      className="perfil-portfolio-pagina-seta"
+                      onClick={() => irParaPaginaPortfolio(paginaAtualPortfolio - 1)}
+                      disabled={paginaAtualPortfolio === 1}
+                      aria-label="Página anterior"
+                    >
+                      &lt;
+                    </button>
+                    {Array.from({ length: totalPaginasPortfolio }, (_, i) => i + 1).map((numero) => (
+                      <button
+                        key={numero}
+                        type="button"
+                        className={`perfil-portfolio-pagina${numero === paginaAtualPortfolio ? ' ativa' : ''}`}
+                        onClick={() => irParaPaginaPortfolio(numero)}
+                        aria-current={numero === paginaAtualPortfolio ? 'page' : undefined}
+                        aria-label={`Página ${numero}`}
+                      >
+                        {numero}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className="perfil-portfolio-pagina-seta"
+                      onClick={() => irParaPaginaPortfolio(paginaAtualPortfolio + 1)}
+                      disabled={paginaAtualPortfolio === totalPaginasPortfolio}
+                      aria-label="Próxima página"
+                    >
+                      &gt;
+                    </button>
+                  </nav>
+                )}
+              </>
             )}
             {erroPortfolio && !modalNovaFotoAberto && !modalPortfolioAberto && (
               <p className="perfil-erro" role="alert">{erroPortfolio}</p>
@@ -1511,6 +1677,7 @@ export default function Profile() {
         isOpen={modalPortfolioAberto}
         onClose={() => setModalPortfolioAberto(false)}
         title="Meu Portfólio"
+        className="modal-portfolio"
       >
         <div className="modal-body">
           {portfolio.length === 0 ? (
@@ -1526,60 +1693,96 @@ export default function Profile() {
                   setModalPortfolioAberto(false);
                 }}
               >
-                + Adicionar Foto do Projeto
+                + Adicionar item ao portfólio
               </button>
             </div>
           ) : (
-            <>
+            <div className="modal-portfolio-grade">
               {portfolio.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '16px',
-                    backgroundColor: '#f7f4fb',
-                    borderRadius: '16px',
-                    border: '1px solid #e7dff1',
-                  }}
-                >
-                  <img
-                    src={item.imagem}
-                    alt={item.titulo}
-                    style={{
-                      width: '100%',
-                      maxHeight: '340px',
-                      objectFit: 'cover',
-                      borderRadius: '12px',
-                    }}
-                  />
-                  <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, fontSize: '1rem', color: '#2c2336' }}>{item.titulo}</h3>
+                <div key={item.id} className="modal-portfolio-item">
+                  <img src={item.imagem} alt={item.titulo} className="modal-portfolio-img" />
+                  <div className="modal-portfolio-rodape">
+                    <h3 className="modal-portfolio-titulo" title={item.titulo}>{item.titulo}</h3>
                     <button
                       type="button"
-                      onClick={() => handleRemoverFotoPortfolio(item.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#a52d21',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                      }}
+                      className="modal-portfolio-editar"
+                      onClick={() => handleAbrirEdicaoPortfolio(item)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="modal-portfolio-excluir"
+                      onClick={() => handleRemoverFotoPortfolio(item)}
                     >
                       Excluir
                     </button>
                   </div>
                 </div>
               ))}
-            </>
+            </div>
           )}
           {erroPortfolio && !modalNovaFotoAberto && (
             <p className="perfil-erro" role="alert">{erroPortfolio}</p>
           )}
         </div>
+      </Modal>
+
+      {/* modal para editar uma foto do portfolio (titulo e, opcionalmente, a imagem) */}
+      <Modal
+        isOpen={Boolean(edicaoPortfolio)}
+        onClose={fecharEdicaoPortfolio}
+        title="Editar item"
+      >
+        {edicaoPortfolio && (
+          <form onSubmit={handleSalvarEdicaoPortfolio} className="modal-body">
+            <div className="modal-form-grupo">
+              <span className="modal-label">Imagem</span>
+              <img
+                src={edicaoPortfolio.preview || edicaoPortfolio.imagemAtual}
+                alt={edicaoPortfolio.preview ? 'Pré-visualização da nova imagem' : `Imagem atual de ${edicaoPortfolio.titulo}`}
+                className="portfolio-edicao-img"
+              />
+              <label className="portfolio-edicao-trocar">
+                {edicaoPortfolio.preview ? 'Escolher outra imagem' : 'Trocar imagem'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleTrocarImagemEdicao}
+                  className="portfolio-edicao-input"
+                />
+              </label>
+              <p className="portfolio-edicao-dica">JPG, PNG ou WEBP, até 4 MB.</p>
+            </div>
+
+            <div className="modal-form-grupo">
+              <label htmlFor="portfolio-editar-titulo" className="modal-label">
+                Título
+              </label>
+              <input
+                id="portfolio-editar-titulo"
+                type="text"
+                required
+                autoFocus
+                className="modal-input"
+                maxLength={LIMITE_TITULO_PORTFOLIO}
+                value={edicaoPortfolio.titulo}
+                onChange={(e) => setEdicaoPortfolio({ ...edicaoPortfolio, titulo: e.target.value })}
+              />
+            </div>
+
+            {erroEdicaoPortfolio && <p className="perfil-erro" role="alert">{erroEdicaoPortfolio}</p>}
+
+            <div className="modal-footer">
+              <button type="button" className="modal-btn-cancel" onClick={fecharEdicaoPortfolio}>
+                Cancelar
+              </button>
+              <button type="submit" className="modal-btn-submit" disabled={salvandoEdicaoPortfolio}>
+                {salvandoEdicaoPortfolio ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </form>
+        )}
       </Modal>
 
       {/* modal para adicionar foto ao portfolio */}
@@ -1637,6 +1840,30 @@ export default function Profile() {
           </div>
         </form>
       </Modal>
+
+      {/* confirmacao de exclusao de foto do portfolio */}
+      {exclusaoPortfolio && (
+        <ConfirmarAcao
+          titulo="Excluir item do portfólio?"
+          mensagem={`"${exclusaoPortfolio.titulo}" será removido do seu portfólio, com imagem e título. Essa ação não pode ser desfeita.`}
+          rotuloConfirmar="Sim, excluir"
+          perigo
+          onConfirmar={confirmarRemocaoPortfolio}
+          onCancelar={() => setExclusaoPortfolio(null)}
+        />
+      )}
+
+      {/* confirmacao de remocao de servico oferecido */}
+      {exclusaoServico && (
+        <ConfirmarAcao
+          titulo="Remover serviço?"
+          mensagem={`"${exclusaoServico.titulo}" sairá dos serviços que você oferece. Favoritos, matches e conversas ligados a este serviço também serão apagados.`}
+          rotuloConfirmar="Sim, remover"
+          perigo
+          onConfirmar={confirmarRemocaoServico}
+          onCancelar={() => setExclusaoServico(null)}
+        />
+      )}
 
       {/* modal de avaliacoes */}
       <Modal

@@ -11,4 +11,15 @@ export async function adicionarFotoPortfolio(arquivo, titulo) {
   return requisitar('/me/portfolio', 'POST', dados);
 }
 
+// Edita o título e, se vier um arquivo, troca a imagem.
+// Com arquivo vai como POST + _method=PATCH: o PHP não lê arquivos enviados em PATCH.
+export async function editarFotoPortfolio(id, titulo, arquivo) {
+  if (!arquivo) return requisitar(`/me/portfolio/${id}`, 'PATCH', { titulo });
+  const dados = new FormData();
+  dados.append('_method', 'PATCH');
+  dados.append('titulo', titulo);
+  dados.append('imagem', arquivo);
+  return requisitar(`/me/portfolio/${id}`, 'POST', dados);
+}
+
 export const removerFotoPortfolio = (id) => requisitar(`/me/portfolio/${id}`, 'DELETE');

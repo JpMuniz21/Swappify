@@ -15,6 +15,8 @@ class PortfolioController extends Controller
 
     private const CAMPOS = ['id', 'titulo', 'imagem_url', 'created_at'];
 
+    private const REGRAS_IMAGEM = ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'];
+
     // GET /api/me/portfolio
     public function index(Request $request): JsonResponse
     {
@@ -29,26 +31,54 @@ class PortfolioController extends Controller
         $usuario = $request->user();
         $request->validate([
             'titulo' => ['required', 'string', 'max:80'],
-            'imagem' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'imagem' => ['required', ...self::REGRAS_IMAGEM],
             'usuario_id' => ['prohibited'],
         ]);
 
         if ($usuario->portfolio()->count() >= self::LIMITE) {
             throw ValidationException::withMessages([
-                'imagem' => ['Seu portfólio pode ter no máximo '.self::LIMITE.' fotos.'],
+                'imagem' => ['Seu portfólio pode ter no máximo '.self::LIMITE.' itens.'],
             ]);
         }
 
-        $caminho = $request->file('imagem')->store('portfolio', 'public');
         $item = $usuario->portfolio()->create([
             'titulo' => $request->string('titulo')->trim()->toString(),
-            'imagem_url' => asset('storage/'.$caminho),
+            'imagem_url' => $this->salvarImagem($request),
         ]);
 
         return response()->json([
-            'message' => 'Foto adicionada ao portfólio.',
+            'message' => 'Item adicionado ao portfólio.',
             'data' => $item->only(self::CAMPOS),
         ], 201);
+    }
+
+    // PATCH /api/me/portfolio/{item}  { titulo, imagem? }
+    // Com imagem nova o front envia multipart como POST + _method=PATCH (o PHP não lê arquivos em PATCH).
+    public function update(Request $request, PortfolioItem $item): JsonResponse
+    {
+        abort_unless($item->usuario_id === $request->user()->id, 403);
+        $request->validate([
+            'titulo' => ['required', 'string', 'max:80'],
+            'imagem' => ['nullable', ...self::REGRAS_IMAGEM],
+        ]);
+
+        $imagemAnterior = null;
+        $item->titulo = $request->string('titulo')->trim()->toString();
+        if ($request->hasFile('imagem')) {
+            $imagemAnterior = $item->imagem_url;
+            $item->imagem_url = $this->salvarImagem($request);
+        }
+        $item->save();
+
+        // só apaga a antiga depois de salvar a nova no banco
+        if ($imagemAnterior) {
+            $this->apagarImagem($imagemAnterior);
+        }
+
+        return response()->json([
+            'message' => 'Item atualizado.',
+            'data' => $item->only(self::CAMPOS),
+        ]);
     }
 
     // DELETE /api/me/portfolio/{item}
@@ -56,11 +86,22 @@ class PortfolioController extends Controller
     {
         abort_unless($item->usuario_id === $request->user()->id, 403);
 
-        if (str_contains($item->imagem_url, '/storage/portfolio/')) {
-            Storage::disk('public')->delete('portfolio/'.basename($item->imagem_url));
-        }
+        $this->apagarImagem($item->imagem_url);
         $item->delete();
 
-        return response()->json(['message' => 'Foto removida do portfólio.']);
+        return response()->json(['message' => 'Item removido do portfólio.']);
+    }
+
+    private function salvarImagem(Request $request): string
+    {
+        return asset('storage/'.$request->file('imagem')->store('portfolio', 'public'));
+    }
+
+    // apaga o arquivo só se ele foi enviado por aqui
+    private function apagarImagem(string $url): void
+    {
+        if (str_contains($url, '/storage/portfolio/')) {
+            Storage::disk('public')->delete('portfolio/'.basename($url));
+        }
     }
 }

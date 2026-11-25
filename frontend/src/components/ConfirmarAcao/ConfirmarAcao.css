@@ -1,3 +1,8 @@
+/* a confirmação fica acima de qualquer modal (os do componente Modal usam z-index 1000) */
+.confirmar-acao-fundo {
+  z-index: 1100;
+}
+
 .agenda-confirmar {
   max-width: 380px;
 }
