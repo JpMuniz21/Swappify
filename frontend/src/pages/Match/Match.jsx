@@ -23,7 +23,7 @@ function paraPerfil(servico) {
     localizacao: local ? [local.cidade, local.estado].filter(Boolean).join(', ') : '',
     bio: servico.usuario?.bio || '',
     servico: { titulo: servico.titulo, descricao: servico.descricao },
-    foto: null,
+    foto: servico.usuario?.avatar_url || null, // sem foto → o card mostra o boneco padrão
   };
 }
 

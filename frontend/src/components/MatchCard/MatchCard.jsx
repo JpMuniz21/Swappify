@@ -7,7 +7,9 @@ import './MatchCard.css';
  * Suporta animacao de swipe: direita = like, esquerda = pass.
  */
 export default function MatchCard({ perfil, animacao }) {
-  const [imgErro, setImgErro] = useState(false);
+  // guarda QUAL foto falhou: o card é reaproveitado entre pessoas, e um booleano
+  // escondia a foto de todas as seguintes depois do primeiro erro
+  const [fotoComErro, setFotoComErro] = useState(null);
 
   if (!perfil) return null;
 
@@ -39,12 +41,12 @@ export default function MatchCard({ perfil, animacao }) {
     >
       {/* lado esquerdo: foto */}
       <div className="match-card-foto-col">
-        {foto && !imgErro ? (
+        {foto && foto !== fotoComErro ? (
           <img
             src={foto}
             alt={`Foto de ${nome}`}
             className="match-card-foto"
-            onError={() => setImgErro(true)}
+            onError={() => setFotoComErro(foto)}
           />
         ) : (
           <div className="match-card-foto match-card-foto--placeholder" aria-hidden="true">

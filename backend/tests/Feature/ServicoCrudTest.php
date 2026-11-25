@@ -71,6 +71,16 @@ class ServicoCrudTest extends TestCase
         $this->assertDatabaseHas('servicos', ['id' => $service->id, 'usuario_id' => $owner->id]);
     }
 
+    public function test_catalog_returns_owner_avatar(): void
+    {
+        $dono = User::factory()->create();
+        $dono->forceFill(['avatar_url' => 'http://localhost/storage/avatares/foto.png'])->save();
+        $service = Servico::factory()->for($dono, 'usuario')->create();
+
+        $this->getJson("/api/servicos/{$service->id}")->assertOk()
+            ->assertJsonPath('data.usuario.avatar_url', 'http://localhost/storage/avatares/foto.png');
+    }
+
     public function test_public_catalog_does_not_expose_private_profile_fields(): void
     {
         $service = Servico::factory()->create();
