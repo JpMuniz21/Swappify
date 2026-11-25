@@ -107,6 +107,47 @@ class AccountTest extends TestCase
         $this->assertNotNull($user->fresh()->location_id);
     }
 
+    public function test_profile_saves_and_clears_availability(): void
+    {
+        $user = User::factory()->create();
+        $disponibilidade = [
+            'dias' => 'Segunda a Sexta',
+            'horarios' => '09:00 às 12:00',
+            'atendimentos' => 'Online',
+            'distancia' => 'Fortaleza e região',
+            'mensagem' => 'Vamos combinar?',
+        ];
+
+        // chaves extras são descartadas
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => [...$disponibilidade, 'extra' => 'x']])
+            ->assertOk()
+            ->assertJsonPath('data.disponibilidade', $disponibilidade);
+
+        // continua lá ao consultar o perfil, e outros campos não mexem nela
+        $this->actingAs($user)->patchJson('/api/me', ['bio' => 'Oi'])->assertOk();
+        $this->actingAs($user)->getJson('/api/me')->assertOk()
+            ->assertJsonPath('data.disponibilidade.dias', 'Segunda a Sexta');
+
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => null])->assertOk()
+            ->assertJsonPath('data.disponibilidade', null);
+    }
+
+    public function test_availability_is_validated(): void
+    {
+        $user = User::factory()->create();
+        $valida = ['dias' => 'Sábado', 'horarios' => 'Manhã', 'atendimentos' => 'Presencial'];
+
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => ['horarios' => 'Manhã', 'atendimentos' => 'Online']])
+            ->assertUnprocessable()->assertJsonValidationErrors('disponibilidade.dias');
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => [...$valida, 'atendimentos' => 'Por telepatia']])
+            ->assertUnprocessable()->assertJsonValidationErrors('disponibilidade.atendimentos');
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => [...$valida, 'mensagem' => str_repeat('a', 241)]])
+            ->assertUnprocessable()->assertJsonValidationErrors('disponibilidade.mensagem');
+        $this->actingAs($user)->patchJson('/api/me', ['disponibilidade' => 'texto'])->assertUnprocessable();
+
+        $this->assertNull($user->fresh()->disponibilidade);
+    }
+
     public function test_profile_rejects_incomplete_location_and_external_location_id(): void
     {
         $user = User::factory()->create();

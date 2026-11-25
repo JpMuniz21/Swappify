@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Storage; // Salva e apaga a foto de perfil no dis
 // CRUD do próprio usuário. Administração deverá ter rotas e autorização separadas.
 class AccountController extends Controller
 {
+    // Opções de atendimento da disponibilidade (as mesmas do select do perfil).
+    public const ATENDIMENTOS = ['Presencial', 'Online', 'Online e Presencial'];
+
     // FRONTEND: chamar antes de enviar cadastro/login e após mudanças de sessão.
     public function csrfToken(Request $request): JsonResponse
     {
@@ -82,9 +85,23 @@ class AccountController extends Controller
             'localizacao.bairro' => ['required_with:localizacao', 'string', 'max:50'],
             'localizacao.cep' => ['nullable', 'string', 'size:8'],
             'location_id' => ['prohibited'], // Localização é criada/vinculada pelo servidor.
+            // Disponibilidade do perfil; null apaga. Só estes campos são guardados.
+            'disponibilidade' => ['sometimes', 'nullable', 'array'],
+            'disponibilidade.dias' => ['required_with:disponibilidade', 'string', 'max:100'],
+            'disponibilidade.horarios' => ['required_with:disponibilidade', 'string', 'max:150'],
+            'disponibilidade.atendimentos' => ['required_with:disponibilidade', Rule::in(self::ATENDIMENTOS)],
+            'disponibilidade.distancia' => ['nullable', 'string', 'max:100'],
+            'disponibilidade.mensagem' => ['nullable', 'string', 'max:240'],
             'current_password' => ['required_with:email,password', 'current_password:web'], // Confirma a senha atual para alterações sensíveis.
         ]);
         unset($data['current_password']); // A confirmação serve só para validar; nunca é salva.
+        if (! empty($data['disponibilidade'])) {
+            // descarta chaves extras que o cliente tenha mandado
+            $data['disponibilidade'] = array_intersect_key(
+                $data['disponibilidade'],
+                array_flip(['dias', 'horarios', 'atendimentos', 'distancia', 'mensagem'])
+            );
+        }
         $localizacao = $data['localizacao'] ?? null;
         $localizacaoFoiEnviada = array_key_exists('localizacao', $data);
         unset($data['localizacao']);

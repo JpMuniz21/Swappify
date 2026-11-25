@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 // Mantém os campos de perfil usados pelo CRUD de serviços.
 // A data de cadastro é atribuída pelo servidor, não pelo formulário.
-#[Fillable(['name', 'email', 'password', 'profession', 'bio', 'location_id'])]
+#[Fillable(['name', 'email', 'password', 'profession', 'bio', 'location_id', 'disponibilidade'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -35,6 +35,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime', // Converte datas na leitura.
             'password' => 'hashed', // Nunca armazena a senha em texto.
             'registered_at' => 'date', // Preserva o campo introduzido na dev.
+            'disponibilidade' => 'array', // JSON no banco, objeto na API.
         ];
     }
 
