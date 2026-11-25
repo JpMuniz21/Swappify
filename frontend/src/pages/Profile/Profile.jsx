@@ -25,12 +25,18 @@ const DADOS_INICIAIS_FIGMA = {
   avatar_url: avatarPadrao,
 };
 
-const DADOS_DISPONIBILIDADE_INICIAL = {
-  dias: 'Segunda a Sexta',
-  horarios: '09:00 hrs às 12:00hrs | 14:00hrs às 17:00 hrs',
+// campos nulos da API viram '' para os inputs controlados
+function limparNulos(objeto) {
+  return Object.fromEntries(Object.entries(objeto).map(([chave, valor]) => [chave, valor ?? '']));
+}
+
+// formulario de disponibilidade comeca vazio (os exemplos ficam nos placeholders)
+const DISPONIBILIDADE_VAZIA = {
+  dias: '',
+  horarios: '',
   atendimentos: 'Presencial',
-  distancia: 'Fortaleza e região',
-  mensagem: 'Gosto de trabalhar com flexibilidade de horários. Vamos combinar?',
+  distancia: '',
+  mensagem: '',
 };
 
 const TEXTO_SOBRE_MIM_PLACEHOLDER =
@@ -189,9 +195,10 @@ export default function Profile() {
   // disponibilidade e modo de edicao
   const [disponibilidadePreenchida, setDisponibilidadePreenchida] = useState(false);
   const [modoEdicaoDisponibilidade, setModoEdicaoDisponibilidade] = useState(false);
-  const [disponibilidade, setDisponibilidade] = useState(DADOS_DISPONIBILIDADE_INICIAL);
-  const [formDisponibilidade, setFormDisponibilidade] = useState(DADOS_DISPONIBILIDADE_INICIAL);
-  const [modalEditarDisponibilidade, setModalEditarDisponibilidade] = useState(false);
+  const [disponibilidade, setDisponibilidade] = useState(DISPONIBILIDADE_VAZIA);
+  const [formDisponibilidade, setFormDisponibilidade] = useState(DISPONIBILIDADE_VAZIA);
+  const [salvandoDisponibilidade, setSalvandoDisponibilidade] = useState(false);
+  const [erroDisponibilidade, setErroDisponibilidade] = useState('');
 
    const [formPerfil, setFormPerfil] = useState({
     name: DADOS_INICIAIS_FIGMA.name,
@@ -272,6 +279,10 @@ export default function Profile() {
           }
           if (Array.isArray(dadosApi.servicos_procurados)) {
             setServicosProcurados(dadosApi.servicos_procurados.map(procuradoDaApi));
+          }
+          if (dadosApi.disponibilidade) {
+            setDisponibilidade({ ...DISPONIBILIDADE_VAZIA, ...limparNulos(dadosApi.disponibilidade) });
+            setDisponibilidadePreenchida(true);
           }
           if (Array.isArray(dadosApi.portfolio)) {
             setPortfolio(dadosApi.portfolio.map(portfolioDaApi));
@@ -462,6 +473,7 @@ export default function Profile() {
   // controle de disponibilidade
   function handleAbrirEdicaoDisponibilidade() {
     setFormDisponibilidade({ ...disponibilidade });
+    setErroDisponibilidade('');
     setModoEdicaoDisponibilidade(true);
   }
 
@@ -470,14 +482,31 @@ export default function Profile() {
     setModoEdicaoDisponibilidade(false);
   }
 
-  function handleSalvarDisponibilidade(e) {
-    if (e && e.preventDefault) {
-      e.preventDefault();
+  // salva na API (PATCH /me { disponibilidade }); distância e mensagem são opcionais
+  async function handleSalvarDisponibilidade() {
+    const dados = {
+      dias: formDisponibilidade.dias.trim(),
+      horarios: formDisponibilidade.horarios.trim(),
+      atendimentos: formDisponibilidade.atendimentos,
+      distancia: formDisponibilidade.distancia.trim() || null,
+      mensagem: formDisponibilidade.mensagem.trim() || null,
+    };
+    if (!dados.dias || !dados.horarios) {
+      setErroDisponibilidade('Preencha os dias e os horários disponíveis.');
+      return;
     }
-    setDisponibilidade({ ...formDisponibilidade });
-    setDisponibilidadePreenchida(true);
-    setModoEdicaoDisponibilidade(false);
-    setModalEditarDisponibilidade(false);
+    setErroDisponibilidade('');
+    setSalvandoDisponibilidade(true);
+    try {
+      const resposta = await atualizarPerfil({ disponibilidade: dados });
+      setDisponibilidade({ ...DISPONIBILIDADE_VAZIA, ...limparNulos(resposta?.data?.disponibilidade ?? dados) });
+      setDisponibilidadePreenchida(true);
+      setModoEdicaoDisponibilidade(false);
+    } catch (erro) {
+      setErroDisponibilidade(mensagemDeErro(erro, 'Não foi possível salvar a disponibilidade.'));
+    } finally {
+      setSalvandoDisponibilidade(false);
+    }
   }
 
   // Serviços oferecidos são salvos na API (POST/DELETE /servicos): é com eles que
@@ -1091,6 +1120,7 @@ export default function Profile() {
                         value={formDisponibilidade.dias}
                         onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, dias: e.target.value })}
                         placeholder="Ex: Segunda a Sexta"
+                        maxLength={100}
                         required
                       />
                     </div>
@@ -1115,6 +1145,7 @@ export default function Profile() {
                         value={formDisponibilidade.horarios}
                         onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, horarios: e.target.value })}
                         placeholder="Ex: 09:00 hrs às 12:00hrs | 14:00hrs às 17:00 hrs"
+                        maxLength={150}
                         required
                       />
                     </div>
@@ -1160,6 +1191,7 @@ export default function Profile() {
                         value={formDisponibilidade.distancia}
                         onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, distancia: e.target.value })}
                         placeholder="Ex: Fortaleza e região"
+                        maxLength={100}
                       />
                     </div>
                   </div>
@@ -1175,10 +1207,13 @@ export default function Profile() {
                       value={formDisponibilidade.mensagem}
                       onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, mensagem: e.target.value })}
                       placeholder="Gosto de trabalhar com flexibilidade de horários. Vamos combinar?"
+                      maxLength={240}
                       rows={2}
                     />
                   </div>
                 </div>
+
+                {erroDisponibilidade && <p className="perfil-erro" role="alert">{erroDisponibilidade}</p>}
 
                 {/* acoes de salvar e cancelar */}
                 <div className="disponibilidade-acoes-botoes">
@@ -1187,6 +1222,7 @@ export default function Profile() {
                       type="button"
                       className="perfil-disponibilidade-btn-cancelar"
                       onClick={handleCancelarEdicaoDisponibilidade}
+                      disabled={salvandoDisponibilidade}
                     >
                       Cancelar
                     </button>
@@ -1195,8 +1231,9 @@ export default function Profile() {
                     type="button"
                     className="perfil-disponibilidade-btn-salvar"
                     onClick={handleSalvarDisponibilidade}
+                    disabled={salvandoDisponibilidade}
                   >
-                    Salvar
+                    {salvandoDisponibilidade ? 'Salvando...' : 'Salvar'}
                   </button>
                 </div>
               </>
@@ -1270,24 +1307,28 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  {/* distancia maxima */}
-                  <div className="disponibilidade-linha-item" style={{ borderBottom: 'none' }}>
-                    <div className="disponibilidade-icone-wrapper">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
+                  {/* distancia maxima (opcional) */}
+                  {disponibilidade.distancia && (
+                    <div className="disponibilidade-linha-item" style={{ borderBottom: 'none' }}>
+                      <div className="disponibilidade-icone-wrapper">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                      </div>
+                      <div className="disponibilidade-textos">
+                        <h3 className="disponibilidade-item-titulo">Distância Máxima</h3>
+                        <p className="disponibilidade-item-subtitulo">{disponibilidade.distancia}</p>
+                      </div>
                     </div>
-                    <div className="disponibilidade-textos">
-                      <h3 className="disponibilidade-item-titulo">Distância Máxima</h3>
-                      <p className="disponibilidade-item-subtitulo">{disponibilidade.distancia}</p>
-                    </div>
-                  </div>
+                  )}
 
-                  {/* mensagem de flexibilidade */}
-                  <div className="disponibilidade-bloco-destaque">
-                    <p>{disponibilidade.mensagem}</p>
-                  </div>
+                  {/* mensagem de flexibilidade (opcional) */}
+                  {disponibilidade.mensagem && (
+                    <div className="disponibilidade-bloco-destaque">
+                      <p>{disponibilidade.mensagem}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* botao de salvar disponibilidade */}
@@ -1653,97 +1694,6 @@ export default function Profile() {
             Quando você realizar trocas de serviços com outros usuários, os feedbacks e notas aparecerão aqui.
           </p>
         </div>
-      </Modal>
-
-      {/* modal de edicao da disponibilidade */}
-      <Modal
-        isOpen={modalEditarDisponibilidade}
-        onClose={() => setModalEditarDisponibilidade(false)}
-        title="Editar Disponibilidade"
-      >
-        <form onSubmit={handleSalvarDisponibilidade} className="modal-body">
-          <div className="modal-form-grupo">
-            <label htmlFor="disp-dias" className="modal-label">
-              Dias disponíveis
-            </label>
-            <input
-              id="disp-dias"
-              type="text"
-              required
-              className="modal-input"
-              value={formDisponibilidade.dias}
-              onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, dias: e.target.value })}
-            />
-          </div>
-
-          <div className="modal-form-grupo">
-            <label htmlFor="disp-horarios" className="modal-label">
-              Horários
-            </label>
-            <input
-              id="disp-horarios"
-              type="text"
-              required
-              className="modal-input"
-              value={formDisponibilidade.horarios}
-              onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, horarios: e.target.value })}
-            />
-          </div>
-
-          <div className="modal-form-grupo">
-            <label htmlFor="disp-atendimentos" className="modal-label">
-              Atendimentos
-            </label>
-            <select
-              id="disp-atendimentos"
-              className="modal-select"
-              value={formDisponibilidade.atendimentos}
-              onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, atendimentos: e.target.value })}
-            >
-              <option value="Presencial">Presencial</option>
-              <option value="Online">Online</option>
-              <option value="Online e Presencial">Online e Presencial</option>
-            </select>
-          </div>
-
-          <div className="modal-form-grupo">
-            <label htmlFor="disp-distancia" className="modal-label">
-              Distância Máxima
-            </label>
-            <input
-              id="disp-distancia"
-              type="text"
-              className="modal-input"
-              value={formDisponibilidade.distancia}
-              onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, distancia: e.target.value })}
-            />
-          </div>
-
-          <div className="modal-form-grupo">
-            <label htmlFor="disp-mensagem" className="modal-label">
-              Mensagem sobre flexibilidade
-            </label>
-            <textarea
-              id="disp-mensagem"
-              className="modal-textarea"
-              value={formDisponibilidade.mensagem}
-              onChange={(e) => setFormDisponibilidade({ ...formDisponibilidade, mensagem: e.target.value })}
-            />
-          </div>
-
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="modal-btn-cancel"
-              onClick={() => setModalEditarDisponibilidade(false)}
-            >
-              Cancelar
-            </button>
-            <button type="submit" className="modal-btn-submit">
-              Salvar Disponibilidade
-            </button>
-          </div>
-        </form>
       </Modal>
     </div>
   );
