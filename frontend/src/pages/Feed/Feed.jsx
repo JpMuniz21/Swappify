@@ -3,6 +3,7 @@ import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import { logout } from '../../services/authService';
 import { listarPostagens, criarPostagem } from '../../services/postagemService';
+import { TAMANHO_MAXIMO_ORIGINAL, TEXTO_TAMANHO_MAXIMO } from '../../utils/reduzirImagem';
 import avatarPadrao from '../../assets/avatar-padrao.svg';
 import logo from '../../assets/logo-swappify.svg';
 import './Feed.css';
@@ -97,8 +98,8 @@ export default function Feed() {
       setAviso('Escolha uma imagem JPG, PNG ou WEBP.');
       return;
     }
-    if (escolhido.size > 2 * 1024 * 1024) {
-      setAviso('A imagem deve ter no máximo 2 MB.');
+    if (escolhido.size > TAMANHO_MAXIMO_ORIGINAL) {
+      setAviso(`A imagem deve ter no máximo ${TEXTO_TAMANHO_MAXIMO}.`);
       return;
     }
     removerArquivo();
