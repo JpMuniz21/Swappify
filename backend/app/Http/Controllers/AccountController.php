@@ -134,10 +134,44 @@ class AccountController extends Controller
             'current_password' => ['required', 'current_password:web'], // Impede exclusão sem confirmação da senha.
         ]);
         $user = $request->user('web'); // Guarda a conta antes de encerrar sua sessão.
+        // Os registros somem pela chave estrangeira, mas os arquivos ficariam no disco:
+        // anota quais são antes de apagar a conta.
+        $arquivos = $this->arquivosDaConta($user);
         $this->endSession($request); // Logout vem antes: ele pode salvar o remember_token no model.
         $user->delete(); // A chave estrangeira também exclui os serviços desta conta; informar isso na confirmação do frontend.
 
+        // Só apaga os arquivos depois que a conta saiu do banco.
+        foreach ($arquivos as [$pasta, $url]) {
+            $this->apagarArquivoPublico($url, $pasta);
+        }
+
         return response()->noContent(); // HTTP 204 confirma a operação sem enviar JSON.
+    }
+
+    // Arquivos enviados pela conta: foto de perfil, portfólio e imagens das postagens.
+    // @return list<array{0: string, 1: string}> pares [pasta, url]
+    private function arquivosDaConta(User $user): array
+    {
+        $arquivos = [];
+        if ($user->avatar_url) {
+            $arquivos[] = ['avatares', $user->avatar_url];
+        }
+        foreach ($user->portfolio()->pluck('imagem_url') as $url) {
+            $arquivos[] = ['portfolio', $url];
+        }
+        foreach ($user->postagens()->whereNotNull('url_anexo')->pluck('url_anexo') as $url) {
+            $arquivos[] = ['postagens', $url];
+        }
+
+        return $arquivos;
+    }
+
+    // Apaga do disco público só arquivos enviados pela própria API (links externos são ignorados).
+    private function apagarArquivoPublico(string $url, string $pasta): void
+    {
+        if (str_contains($url, "/storage/{$pasta}/")) {
+            Storage::disk('public')->delete($pasta.'/'.basename($url));
+        }
     }
 
     // Logout encerra a sessão, mas mantém a conta e seus dados.

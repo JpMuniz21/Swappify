@@ -6,6 +6,7 @@ use App\Models\User; // Cria contas controladas para os cenários.
 use Illuminate\Foundation\Testing\RefreshDatabase; // Recria as tabelas no SQLite em memória definido no phpunit.xml.
 use Illuminate\Support\Facades\Auth; // Limpa a autenticação entre requisições quando necessário.
 use Illuminate\Support\Facades\Hash; // Confere que as senhas foram armazenadas como hash.
+use Illuminate\Support\Facades\Storage; // Disco falso para conferir os arquivos apagados.
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -169,6 +170,48 @@ class AccountTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
         $this->assertDatabaseHas('users', ['id' => $other->id]);
         $this->assertGuest();
+    }
+
+    public function test_deleting_account_removes_its_uploaded_files_only(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+
+        // um arquivo de cada tipo para a conta excluída, e um de outra conta
+        foreach (['avatares/minha.jpg', 'portfolio/meu.jpg', 'postagens/meu-post.jpg', 'portfolio/do-outro.jpg'] as $caminho) {
+            Storage::disk('public')->put($caminho, 'x');
+        }
+        $user->forceFill(['avatar_url' => 'http://localhost/storage/avatares/minha.jpg'])->save();
+        $user->portfolio()->create(['titulo' => 'Meu', 'imagem_url' => 'http://localhost/storage/portfolio/meu.jpg']);
+        $user->postagens()->create([
+            'titulo' => 'Design', 'conteudo' => 'Post com imagem', 'status' => 'publicada',
+            'url_anexo' => 'http://localhost/storage/postagens/meu-post.jpg',
+        ]);
+        $user->postagens()->create([ // link externo: não é arquivo nosso, não pode quebrar nada
+            'titulo' => 'Design', 'conteudo' => 'Post com link', 'status' => 'publicada',
+            'url_anexo' => 'https://exemplo.com/imagem.jpg',
+        ]);
+        $other->portfolio()->create(['titulo' => 'Do outro', 'imagem_url' => 'http://localhost/storage/portfolio/do-outro.jpg']);
+
+        $this->actingAs($user)->deleteJson('/api/me', ['current_password' => 'password'])->assertNoContent();
+
+        Storage::disk('public')->assertMissing('avatares/minha.jpg');
+        Storage::disk('public')->assertMissing('portfolio/meu.jpg');
+        Storage::disk('public')->assertMissing('postagens/meu-post.jpg');
+        Storage::disk('public')->assertExists('portfolio/do-outro.jpg');
+    }
+
+    public function test_wrong_password_keeps_account_files(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('avatares/minha.jpg', 'x');
+        $user = User::factory()->create();
+        $user->forceFill(['avatar_url' => 'http://localhost/storage/avatares/minha.jpg'])->save();
+
+        $this->actingAs($user)->deleteJson('/api/me', ['current_password' => 'errada'])->assertUnprocessable();
+
+        Storage::disk('public')->assertExists('avatares/minha.jpg');
     }
 
     public function test_csrf_endpoint_and_protection_with_middleware_enabled(): void
