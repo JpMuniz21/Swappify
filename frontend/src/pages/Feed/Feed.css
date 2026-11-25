@@ -217,3 +217,7 @@
   color: #fff;
   cursor: pointer;
 }
+/* nome e foto do autor levam ao perfil publico */
+a.feed-author-avatar { flex-shrink: 0; }
+.feed-author-link { text-decoration: none; }
+.feed-author-link:hover strong { text-decoration: underline; }

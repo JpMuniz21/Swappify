@@ -18,6 +18,7 @@ function paraPerfil(servico) {
   return {
     id: servico.id,
     servicoId: servico.id,
+    usuarioId: servico.usuario?.id ?? servico.usuario_id,
     nome: servico.usuario?.name ?? 'Usuário',
     profissao: servico.usuario?.profession || 'Membro Swappify',
     localizacao: local ? [local.cidade, local.estado].filter(Boolean).join(', ') : '',

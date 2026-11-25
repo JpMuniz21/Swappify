@@ -3,6 +3,7 @@ import RotaProtegida from './components/RotaProtegida/RotaProtegida';
 import Login from './pages/Login/Login';
 import Cadastro from './pages/Cadastro/Cadastro';
 import Profile from './pages/Profile/Profile';
+import PerfilPublico from './pages/PerfilPublico/PerfilPublico';
 import Chat from './pages/Chat/chat';
 import Feed from './pages/Feed/Feed';
 import Configuracoes from './pages/Configuracoes/Configuracoes';
@@ -25,6 +26,7 @@ export default function App() {
         {/* Rotas que exigem login: sem sessão válida, redireciona para /login */}
         <Route element={<RotaProtegida />}>
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/perfil/:id" element={<PerfilPublico />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/configuracoes" element={<Configuracoes />} />

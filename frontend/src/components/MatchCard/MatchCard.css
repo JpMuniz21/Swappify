@@ -242,3 +242,17 @@
   line-height: 1.5;
   color: #5c5666;
 }
+
+/* link para o perfil publico do dono do servico */
+.match-card-ver-perfil {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b4984;
+  text-decoration: none;
+}
+
+.match-card-ver-perfil:hover {
+  text-decoration: underline;
+}

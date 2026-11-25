@@ -27,6 +27,7 @@ function tempoRelativo(data) {
 function paraPost(api) {
   return {
     id: api.id,
+    usuarioId: api.usuario?.id ?? api.usuario_id,
     nome: api.usuario?.name ?? 'Usuário',
     profissao: api.usuario?.profession ?? '',
     avatar: api.usuario?.avatar_url ?? null,
@@ -249,11 +250,13 @@ export default function Feed() {
             {visiveis.map(post => (
               <article className="feed-post" key={post.id}>
                 <header className="feed-post-header">
-                  <div className="feed-author-avatar">
+                  <Link to={`/perfil/${post.usuarioId}`} className="feed-author-avatar" aria-label={`Ver perfil de ${post.nome}`}>
                     {post.avatar ? <img src={post.avatar} alt="" /> : <Icone tipo="pessoa" />}
-                  </div>
+                  </Link>
                   <div>
-                    <strong>{post.nome}</strong>
+                    <Link to={`/perfil/${post.usuarioId}`} className="feed-author-link">
+                      <strong>{post.nome}</strong>
+                    </Link>
                     <small>{post.profissao} {post.servico ? `• ${post.servico}` : ''}</small>
                   </div>
                   <span className="feed-post-time">{post.horario}</span>

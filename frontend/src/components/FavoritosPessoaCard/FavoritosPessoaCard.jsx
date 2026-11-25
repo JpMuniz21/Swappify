@@ -1,7 +1,8 @@
-﻿import './FavoritosPessoaCard.css';
+﻿import { Link } from 'react-router-dom';
+import './FavoritosPessoaCard.css';
 
 export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover, rotuloRemover = 'Remover' }) {
-  const { id, nome, profissao, localizacao, online, avaliacao, tags, avatar } = pessoa;
+  const { id, usuarioId, nome, profissao, localizacao, online, avaliacao, tags, avatar } = pessoa;
 
   return (
     <article className="fav-pessoa-card" aria-label={`Favorito: ${nome}`}>
@@ -25,7 +26,11 @@ export default function FavoritosPessoaCard({ pessoa, onConversar, onRemover, ro
 
       <div className="fav-pessoa-info">
         <div className="fav-pessoa-nome-linha">
-          <h3 className="fav-pessoa-nome">{nome}</h3>
+          <h3 className="fav-pessoa-nome">
+            {usuarioId ? (
+              <Link to={`/perfil/${usuarioId}`} className="fav-pessoa-link" title={`Ver perfil de ${nome}`}>{nome}</Link>
+            ) : nome}
+          </h3>
           {avaliacao != null && (
           <span className="fav-pessoa-avaliacao" aria-label={`Avaliacao ${avaliacao}`}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="#fbbd08" aria-hidden="true">

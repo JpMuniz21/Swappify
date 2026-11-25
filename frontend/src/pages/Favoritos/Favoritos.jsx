@@ -27,6 +27,8 @@ function paraServico(interesse) {
 function paraPessoa(match) {
   return {
     id: match.id,
+    usuarioId: match.outro?.id ?? null,
+    avatar: match.outro?.avatar_url ?? null,
     nome: match.outro?.name ?? 'Usuário',
     profissao: match.outro?.profession || 'Membro Swappify',
     tags: [match.servico_do_outro?.titulo, match.meu_servico?.titulo].filter(Boolean),
