@@ -23,6 +23,7 @@ class ServicoResource extends JsonResource
                 'name' => $this->usuario->name,
                 'profession' => $this->usuario->profession,
                 'bio' => $this->usuario->bio,
+                'avatar_url' => $this->usuario->avatar_url, // foto de perfil (pública, já aparece no feed e no chat)
                 'localizacao' => $this->usuario->localizacao ? [
                     'cidade' => $this->usuario->localizacao->cidade,
                     'estado' => $this->usuario->localizacao->estado,
