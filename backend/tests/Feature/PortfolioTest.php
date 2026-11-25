@@ -47,9 +47,35 @@ class PortfolioTest extends TestCase
         $this->actingAs($eu)->getJson('/api/me')->assertOk()
             ->assertJsonPath('data.portfolio.0.titulo', 'Reforma da cozinha');
 
+        // editar o título mantém a mesma imagem
+        $this->actingAs($eu)->patchJson("/api/me/portfolio/{$id}", ['titulo' => '  Cozinha planejada  '])->assertOk()
+            ->assertJsonPath('data.titulo', 'Cozinha planejada')
+            ->assertJsonPath('data.imagem_url', $url);
+        $this->actingAs($eu)->patchJson("/api/me/portfolio/{$id}", ['titulo' => ''])->assertUnprocessable();
+        $this->actingAs($eu)->patchJson("/api/me/portfolio/{$id}", ['titulo' => str_repeat('a', 81)])->assertUnprocessable();
+
+        // trocar a imagem: multipart via POST + _method=PATCH; a antiga é apagada do disco
+        $novaUrl = $this->actingAs($eu)->post("/api/me/portfolio/{$id}", [
+            '_method' => 'PATCH',
+            'titulo' => 'Cozinha pronta',
+            'imagem' => self::png('nova.png'),
+        ], ['Accept' => 'application/json'])->assertOk()
+            ->assertJsonPath('data.titulo', 'Cozinha pronta')
+            ->json('data.imagem_url');
+        $this->assertNotSame($url, $novaUrl);
+        Storage::disk('public')->assertMissing('portfolio/'.basename($url));
+        Storage::disk('public')->assertExists('portfolio/'.basename($novaUrl));
+
+        $this->actingAs($eu)->post("/api/me/portfolio/{$id}", [
+            '_method' => 'PATCH',
+            'titulo' => 'PDF não',
+            'imagem' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'),
+        ], ['Accept' => 'application/json'])->assertUnprocessable();
+        Storage::disk('public')->assertExists('portfolio/'.basename($novaUrl)); // imagem inválida não mexe na atual
+
         $this->actingAs($eu)->deleteJson("/api/me/portfolio/{$id}")->assertOk();
         $this->assertDatabaseMissing('portfolio_itens', ['id' => $id]);
-        Storage::disk('public')->assertMissing('portfolio/'.basename($url));
+        Storage::disk('public')->assertMissing('portfolio/'.basename($novaUrl));
     }
 
     public function test_validation_limit_and_ownership(): void
@@ -77,6 +103,8 @@ class PortfolioTest extends TestCase
         $idDoOutro = $this->actingAs($outro)->post('/api/me/portfolio', ['titulo' => 'Dele', 'imagem' => $foto()], $json)
             ->assertCreated()->json('data.id');
         $this->actingAs($eu)->deleteJson("/api/me/portfolio/{$idDoOutro}")->assertForbidden();
+        $this->actingAs($eu)->patchJson("/api/me/portfolio/{$idDoOutro}", ['titulo' => 'Meu agora'])->assertForbidden();
+        $this->assertDatabaseHas('portfolio_itens', ['id' => $idDoOutro, 'titulo' => 'Dele']);
         $this->actingAs($eu)->deleteJson('/api/me/portfolio/abc')->assertNotFound();
     }
 }

@@ -1,26 +1,35 @@
 import { useEffect } from 'react';
 import './Modal.css';
 
-export default function Modal({ isOpen, onClose, title, children }) {
+let modaisAbertos = 0; // quantos modais estão abertos agora
+
+// className (opcional) vai na caixa do modal, para um modal específico mudar a largura, por exemplo.
+export default function Modal({ isOpen, onClose, title, children, className = '' }) {
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === 'Escape') onClose();
     }
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    if (!isOpen) return undefined;
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // trava a rolagem da página enquanto houver algum modal aberto (pode haver um por cima de outro)
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    modaisAbertos += 1;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      modaisAbertos -= 1;
+      if (modaisAbertos === 0) document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-content ${className}`.trim()} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 id="modal-title" className="modal-title">{title}</h2>
           <button

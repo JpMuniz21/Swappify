@@ -17,7 +17,10 @@ export default function ConfirmarAcao({
 }) {
   useEffect(() => {
     function aoTeclar(e) {
-      if (e.key === 'Escape') onCancelar();
+      if (e.key !== 'Escape') return;
+      // não deixa o Esc chegar a um modal aberto por baixo (ele também fecharia)
+      e.stopPropagation();
+      onCancelar();
     }
     document.addEventListener('keydown', aoTeclar);
     return () => document.removeEventListener('keydown', aoTeclar);
@@ -25,7 +28,7 @@ export default function ConfirmarAcao({
 
   return (
     <div
-      className="agenda-modal-fundo"
+      className="agenda-modal-fundo confirmar-acao-fundo"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onCancelar();
       }}

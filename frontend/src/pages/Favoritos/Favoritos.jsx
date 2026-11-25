@@ -5,6 +5,7 @@ import FavoritosPessoaCard from '../../components/FavoritosPessoaCard/FavoritosP
 import FavoritosServicoCard from '../../components/FavoritosServicoCard/FavoritosServicoCard';
 import FavoritosFiltros from '../../components/FavoritosFiltros/FavoritosFiltros';
 import FavoritosEmpty from '../../components/FavoritosEmpty/FavoritosEmpty';
+import ConfirmarAcao from '../../components/ConfirmarAcao/ConfirmarAcao';
 import { logout } from '../../services/authService';
 import { listarFavoritos, removerFavorito, listarMatches, cancelarMatch } from '../../services/matchService';
 import './Favoritos.css';
@@ -46,6 +47,7 @@ export default function Favoritos() {
   const [servicos, setServicos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [aviso, setAviso] = useState('');
+  const [confirmacao, setConfirmacao] = useState(null); // { titulo, mensagem, rotulo, acao } da janela de confirmação
 
   useEffect(() => {
     let ativo = true;
@@ -69,12 +71,17 @@ export default function Favoritos() {
   }
 
   // "Desfazer match": cancela o match (a conversa deixa de aparecer no chat)
-  async function handleRemoverPessoa(matchId) {
+  function handleRemoverPessoa(matchId) {
     const pessoa = pessoas.find((p) => p.id === matchId);
-    const ok = window.confirm(
-      `Desfazer o match com ${pessoa?.nome ?? 'essa pessoa'}? A conversa de vocês deixará de aparecer no chat.`
-    );
-    if (!ok) return;
+    setConfirmacao({
+      titulo: 'Desfazer match?',
+      mensagem: `Desfazer o match com ${pessoa?.nome ?? 'essa pessoa'}? A conversa de vocês deixará de aparecer no chat.`,
+      rotulo: 'Sim, desfazer',
+      acao: () => desfazerMatch(matchId),
+    });
+  }
+
+  async function desfazerMatch(matchId) {
     try {
       await cancelarMatch(matchId);
       setPessoas((prev) => prev.filter((p) => p.id !== matchId));
@@ -87,15 +94,22 @@ export default function Favoritos() {
 
   // Remover um serviço dos favoritos. Se ele sustenta um match, o backend apaga
   // o match e as mensagens junto (regra atual), então avisamos antes.
-  async function handleRemoverServico(interesseId) {
+  function handleRemoverServico(interesseId) {
     const servico = servicos.find((s) => s.id === interesseId);
-    if (servico?.matchId) {
-      const ok = window.confirm(
-        `Atenção: você tem um match ligado a "${servico.titulo}". Remover este favorito vai desfazer o match `
-        + `e apagar a conversa de vocês, para os dois. Deseja continuar?`
-      );
-      if (!ok) return;
+    if (!servico?.matchId) {
+      removerServico(interesseId, servico);
+      return;
     }
+    setConfirmacao({
+      titulo: 'Remover favorito?',
+      mensagem: `Atenção: você tem um match ligado a "${servico.titulo}". Remover este favorito vai desfazer o match `
+        + 'e apagar a conversa de vocês, para os dois.',
+      rotulo: 'Sim, remover',
+      acao: () => removerServico(interesseId, servico),
+    });
+  }
+
+  async function removerServico(interesseId, servico) {
     try {
       await removerFavorito(interesseId);
       setServicos((prev) => prev.filter((s) => s.id !== interesseId));
@@ -228,6 +242,22 @@ export default function Favoritos() {
 
         </div>
       </main>
+
+      {/* confirmacao na janela do proprio site (no lugar do window.confirm) */}
+      {confirmacao && (
+        <ConfirmarAcao
+          titulo={confirmacao.titulo}
+          mensagem={confirmacao.mensagem}
+          rotuloConfirmar={confirmacao.rotulo}
+          perigo
+          onConfirmar={() => {
+            const { acao } = confirmacao;
+            setConfirmacao(null);
+            acao();
+          }}
+          onCancelar={() => setConfirmacao(null)}
+        />
+      )}
     </div>
   );
 }

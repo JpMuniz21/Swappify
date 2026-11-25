@@ -38,7 +38,8 @@ Route::prefix('api')->middleware('auth.session')->group(function (): void {
         // Portfólio do perfil (POST é multipart: imagem + titulo)
         Route::get('/me/portfolio', [PortfolioController::class, 'index']);
         Route::post('/me/portfolio', [PortfolioController::class, 'store']);
-        Route::delete('/me/portfolio/{item}', [PortfolioController::class, 'destroy'])->whereNumber('item');
+        Route::patch('/me/portfolio/{item}', [PortfolioController::class, 'update'])->whereNumber('item'); // só o título
+        Route::delete('/me/portfolio/{item}',[PortfolioController::class, 'destroy'])->whereNumber('item');
         Route::get('/me', [AccountController::class, 'show']); // Consulta a própria conta.
         Route::patch('/me', [AccountController::class, 'update']); // Altera os campos enviados.
         Route::post('/me/avatar', [AccountController::class, 'avatar']); // Envia a foto de perfil (arquivo, não JSON).
